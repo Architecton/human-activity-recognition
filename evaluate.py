@@ -39,6 +39,8 @@ class_names = data['class_names']
 
 ####################################################
 
+CLF_REPORTS_PATH = './results/clf_reports.txt'
+
 def format_clf_report(clf_report, clf_name, class_names, save_path):
     """Print classification statistics to file.
 
@@ -54,9 +56,6 @@ def format_clf_report(clf_report, clf_name, class_names, save_path):
     with open(save_path, 'a') as f:
         if os.path.isfile(save_path) and os.path.getsize(save_path) > 0:
             f.write('\n')
-
-        import pdb
-        pdb.set_trace()
 
         f.write('Date: {0}\n'.format(datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")))
         f.write('Model: {0}\n'.format(clf_name))
@@ -124,7 +123,7 @@ if 'rf' in EVALUATE:
     cv_cr_rf = cr_rf / (N_SPLITS*N_REPEATS)
 
     # Write classification scoring report.
-    format_clf_report(cv_cr_rf, "Random Forest", class_names, './clf_reports.txt')
+    format_clf_report(cv_cr_rf, "Random Forest", class_names, CLF_REPORTS_PATH)
 
 ####################################################
 
@@ -169,7 +168,7 @@ if 'cnn' in EVALUATE:
     cv_cr_cnn = cr_cnn / (N_SPLITS*N_REPEATS)
 
     # Write classification scoring report.
-    format_clf_report(cv_cr_cnn, "CNN", class_names, './clf_reports.txt')
+    format_clf_report(cv_cr_cnn, "CNN", class_names, CLF_REPORTS_PATH)
 
 ####################################################
 
@@ -214,7 +213,7 @@ if 'lstm' in EVALUATE:
     cv_cr_lstm = cr_lstm / (N_SPLITS*N_REPEATS)
 
     # Write classification scoring report.
-    format_clf_report(cv_cr_lstm, "LSTM", class_names, './clf_reports.txt')
+    format_clf_report(cv_cr_lstm, "LSTM", class_names, CLF_REPORTS_PATH)
 
 ####################################################
 
@@ -228,8 +227,8 @@ if 'lstm' in EVALUATE:
 
 #### SAVE RESULTS TO FILE ##########################
 
-RESULTS_PATH = 'results.txt'
-with open('results.txt', 'a') as f:
+RESULTS_PATH = './results/results.txt'
+with open(RESULTS_PATH, 'a') as f:
     if os.path.isfile(RESULTS_PATH) and os.path.getsize(RESULTS_PATH) > 0:
         f.write('\n')
 
