@@ -18,6 +18,7 @@ from sklearn.metrics import plot_confusion_matrix, classification_report
 
 from imblearn.pipeline import Pipeline
 
+
 def get_confusion_matrix(clf, data, target, clf_name, cm_save_path):
     """Plot and save confuction matrix for specified classifier.
 
@@ -58,14 +59,18 @@ RESAMPLING_METHOD = 'random_oversampling'
 
 # Get data.
 data =  data_preprocessing.get_preprocessed_dataset()
+
 segments = data['segments']
 seg_target = data['seg_target']
 seg_target_encoded = data['seg_target_encoded']
 class_names = data['class_names']
 
+data_fe = sio.loadmat('./data/data_fe/data1.mat')['data']
+data_fe[np.isnan(data_fe)] = 0.0
+target_fe = np.ravel(sio.loadmat('./data/data_fe/target1.mat')['target'])
+
 
 #### GET MODEL CONFUSION MATRICES ####
-
 
 # NN training parameters
 EPOCHS_CNN = 10
@@ -75,7 +80,6 @@ EPOCHS_LSTM = 10
 BATCH_SIZE_LSTM = 10
 
 ### Initialize models. ###
-
 
 # CNN
 model_cnn = models.get_cnn_model(**model_params.get_params('cnn', n_rows=segments[0].shape[0], n_cols=segments[0].shape[1], num_classes=np.unique(seg_target).size))
@@ -96,6 +100,7 @@ if RESAMPLING_METHOD != 'none':
     clf_lstm = Pipeline([('resampler', resampling.get_resampler(RESAMPLING_METHOD)), ('clf', clf_lstm)])
     clf_rf = Pipeline([('resampler', resampling.get_resampler(RESAMPLING_METHOD)), ('clf', clf_rf)])
 
+
 # Set classifier identification properties.
 clf_cnn._kind = 'cnn'
 clf_lstm._kind = 'lstm'
@@ -103,9 +108,10 @@ clf_rf._kind = 'rf'
 
 ### Plot and save confusion matrices ###
 
-get_confusion_matrix(clf_cnn, segments[:, :, :, np.newaxis], seg_target_encoded, 'CNN',  './plots/conf_mat_cnn.svg')
-get_confusion_matrix(clf_lstm, segments, seg_target_encoded, 'LSTM', './plots/conf_mat_lstm.svg')
-get_confusion_matrix(clf_rf, np.array([el.flatten() for el in segments]), seg_target, 'Random Forest', './plots/conf_mat_rf.svg')
+# get_confusion_matrix(clf_cnn, segments[:, :, :, np.newaxis], seg_target_encoded, 'CNN',  './plots/conf_mat_cnn.svg')
+# get_confusion_matrix(clf_lstm, segments, seg_target_encoded, 'LSTM', './plots/conf_mat_lstm.svg')
+# get_confusion_matrix(clf_rf, np.array([el.flatten() for el in segments]), seg_target, 'Random Forest', './plots/conf_mat_rf.svg')
+get_confusion_matrix(clf_rf, data_fe, target_fe, 'Random Forest - Engineered Features', './plots/conf_mat_fe.svg')
 
 ######################################
 

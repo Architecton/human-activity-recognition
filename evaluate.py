@@ -23,13 +23,14 @@ N_REPEATS = 1
 RESAMPLING_METHOD = 'random_oversampling'
 
 # List of models to evaluate.
-EVALUATE = ['rf']
+EVALUATE = ['fe', 'rf']
+
 
 #### (1) DATA PARSING AND PREPROCESSING ############
 
 # Get data.
-DESELECT = []
-data = data_preprocessing.get_preprocessed_dataset(window_size=120, overlap=0.5, deselect=DESELECT, dataset_id=1)
+DESELECT = [1, 2, 3]
+data = data_preprocessing.get_preprocessed_dataset(dataset_id=1, window_size=120, overlap=0.5, deselect=DESELECT)
 segments = data['segments']
 seg_target = data['seg_target']
 seg_target_encoded = data['seg_target_encoded'] 
@@ -38,6 +39,7 @@ class_names = data['class_names']
 
 
 ####################################################
+
 
 CLF_REPORTS_PATH = './results/clf_reports.txt'
 
@@ -86,8 +88,6 @@ def format_clf_report(clf_report, clf_name, class_names, save_path):
         for idx in np.arange(clf_report.shape[1]-1):
             f.write('{0:.4f} '.format(clf_report[3, idx]))
         f.write('{0:.4f}\n'.format(clf_report[3, -1]))
-
-
 
 
 #### (2) EVALUATE BASELINE RANDOM FOREST ##########
@@ -190,7 +190,6 @@ if 'lstm' in EVALUATE:
     if RESAMPLING_METHOD != 'none':
         clf_lstm = Pipeline([('resampler', resampling.get_resampler(RESAMPLING_METHOD)), ('clf', clf_lstm)])
 
-
     # Initialize accumulator for fold results.
     scores_acc_lstm = 0
 
@@ -220,6 +219,45 @@ if 'lstm' in EVALUATE:
 
 #### (5) EVALUATE CLASSIFIERS ON ENG. FEATUERES ####
 
+# If evaluating feature engineering method:
+if 'fe' in EVALUATE:
+    data_fe = sio.loadmat('./data/data_fe/data1.mat')['data']
+    target_fe = np.ravel(sio.loadmat('./data/data_fe/target1.mat')['target'])
+
+    data_fe[np.isnan(data_fe)] = 0.0
+     
+    # Initialize random forest model with specified parameters.
+    clf_rf = models.get_rf_model(**model_params.get_params('rf'))
+
+    # If resampling method specified, integrate into pipeline.
+    if RESAMPLING_METHOD != 'none':
+        clf_rf = Pipeline([('resampler', resampling.get_resampler(RESAMPLING_METHOD)), ('clf', clf_rf)])
+    
+    # Initialize accumulator for fold results.
+    score_acc_fe = 0
+
+    # Initilize array for accumulating classification scoring reports.
+    cr_fe = np.zeros((4, len(class_names)))
+
+
+    # Perform CV.
+    for train_idx, test_idx in RepeatedStratifiedKFold(n_splits=N_SPLITS, n_repeats=N_REPEATS).split(data_fe, target_fe):
+        data_train = data_fe[train_idx, :]
+        data_test = data_fe[test_idx, :]
+        target_train = target_fe[train_idx]
+        target_test = target_fe[test_idx]
+        clf_rf.fit(data_train, target_train)
+        pred_test = clf_rf.predict(data_test)
+        score_acc_fe += accuracy_score(target_test, pred_test)
+        cr_fe = cr_fe + np.array(precision_recall_fscore_support(target_test, pred_test))
+
+    # Get mean fold score for RF model.
+    cv_score_fe = score_acc_fe / (N_SPLITS*N_REPEATS)
+    cv_cr_fe = cr_fe / (N_SPLITS*N_REPEATS)
+
+    # Write classification scoring report.
+    format_clf_report(cv_cr_fe, "Feature Engineering", class_names, CLF_REPORTS_PATH)
+
 
 
 ####################################################
@@ -245,6 +283,8 @@ with open(RESULTS_PATH, 'a') as f:
         f.write('CNN   | {0:.4f}\n'.format(cv_score_cnn))
     if 'lstm' in EVALUATE:
         f.write('LSTM  | {0:.4f}\n'.format(cv_score_lstm))
+    if 'fe' in EVALUATE:
+        f.write('FE  | {0:.4f}\n'.format(cv_score_fe))
 
 ####################################################
 

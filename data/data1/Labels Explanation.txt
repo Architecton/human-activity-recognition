@@ -1,9 +1,0 @@
-Standing - 1
-Sitting - 2
-Walking - 3
-Stand-to-walk - 4
-Stand-to-sit - 5
-Sit-to-stand - 6
-Walk-to-stand - 7
-St-to-walk - 8
-Walk-to-sit - 9

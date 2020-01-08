@@ -1125,3 +1125,100 @@ Deselected: []
 Model | CV Score
 ----------------
 RF    | 0.9349
+
+Date: 07/01/2020 19:05:56
+Window size: 120
+Overlap: 0.5
+Deselected: []
+
+Model | CV Score
+----------------
+FE  | 0.9314
+
+Date: 07/01/2020 19:07:17
+Window size: 120
+Overlap: 0.5
+Deselected: []
+
+Model | CV Score
+----------------
+FE  | 0.9314
+
+Date: 07/01/2020 19:08:24
+Window size: 120
+Overlap: 0.5
+Deselected: []
+
+Model | CV Score
+----------------
+FE  | 0.9326
+
+Date: 07/01/2020 20:23:35
+Window size: 120
+Overlap: 0.5
+Deselected: []
+
+Model | CV Score
+----------------
+RF    | 0.9355
+FE  | 0.9273
+
+Date: 07/01/2020 20:26:11
+Window size: 120
+Overlap: 0.5
+Deselected: []
+
+Model | CV Score
+----------------
+RF    | 0.9349
+FE  | 0.9279
+
+Date: 07/01/2020 20:32:51
+Window size: 120
+Overlap: 0.5
+Deselected: []
+
+Model | CV Score
+----------------
+RF    | 0.9361
+FE  | 0.9373
+
+Date: 07/01/2020 20:49:47
+Window size: 120
+Overlap: 0.0
+Deselected: []
+
+Model | CV Score
+----------------
+RF    | 0.9320
+FE  | 0.9396
+
+Date: 07/01/2020 21:15:15
+Window size: 120
+Overlap: 0.5
+Deselected: []
+
+Model | CV Score
+----------------
+RF    | 0.9355
+FE  | 0.9297
+
+Date: 07/01/2020 21:19:49
+Window size: 120
+Overlap: 0.5
+Deselected: []
+
+Model | CV Score
+----------------
+RF    | 0.9338
+FE  | 0.9373
+
+Date: 07/01/2020 21:21:20
+Window size: 120
+Overlap: 0.5
+Deselected: []
+
+Model | CV Score
+----------------
+RF    | 0.9379
+FE  | 0.9379

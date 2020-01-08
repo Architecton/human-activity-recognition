@@ -27,6 +27,7 @@ def parse_xlsx_file(file_path):
             data[row-1, col] = worksheet.cell_value(row, col)
     return data
 
+
 def parse_csv_file(file_path):
     """Parse contents of csv file into numpy array.
 
@@ -39,10 +40,12 @@ def parse_csv_file(file_path):
         numpy.ndarray: parsed contents of the csv file.
 
     """
-    
+
     # Parse contents into array and return it.
     reader = csv.reader(open(file_path, "r"), delimiter=",")
     raw_data = list(reader)
+    raw_data = [[x for x in el if x != ''] for el in raw_data]
+    raw_data = [el for el in raw_data if len(el) == 4]
     data = np.array(raw_data).astype(np.float)
 
     return data
@@ -56,9 +59,8 @@ def parse_acc_data(data_folder_path, dataset_num):
     Args:
         data_folder_path (str): path of folder containing the dataset.
 
-    Returns:
-        numpy.ndarray: parsed contents of next raw data file.
-
+    Yields:
+        (tuple): parsed contents of next raw data file (examples and target values).
     """
 
     if dataset_num == 1:
@@ -71,14 +73,13 @@ def parse_acc_data(data_folder_path, dataset_num):
             target_final = target[~unlabeled_msk].astype(np.int)
             data_final = data[~unlabeled_msk, :].astype(np.float)
             yield data_final, target_final
-    elif dataset_num == 2:
+    elif dataset_num == 2 or dataset_num == 3:
         # Go over .csv files in data folder.
         for f in glob.glob(data_folder_path + '*.csv'):
             data_raw = parse_csv_file(f)
-            data = data_raw[:, 1:-1]
+            data = data_raw[:, :-1]
             target = data_raw[:, -1]
             yield data.astype(np.int), target.astype(np.int)
-
 
 
 def concatenate_data(data_folder_path, dataset_num):
@@ -92,7 +93,7 @@ def concatenate_data(data_folder_path, dataset_num):
         dataset_num (int): index of dataset to parse.
 
     Returns:
-        numpy.ndarray: parsed contents of dataset files.
+        (tuple): parsed contents of dataset files (examples and target values).
 
     """
 
@@ -113,8 +114,8 @@ def concatenate_data(data_folder_path, dataset_num):
     return data_master, target_master
 
 
-def get_data(data_folder_path):
-    """Get numpy array representing the contents of specified datset.
+def get_data1(data_folder_path):
+    """Get numpy arrays representing the contents of specified datset.
 
     Author: Jernej Vivod (vivod.jernej@gmail.com)
 
@@ -122,7 +123,7 @@ def get_data(data_folder_path):
         file_path (str): path for the xlsx file.
 
     Returns:
-        numpy.ndarray: parsed contents of the xlsx file.
+        (tuple): parsed contents of dataset files (examples and target values).
 
     Raises:
         ValueError
@@ -133,7 +134,7 @@ def get_data(data_folder_path):
 
 
 def get_data2(data_folder_path):
-    """Parse contents of xlsx file into numpy array.
+    """Get numpy arrays representing the contents of specified datset.
 
     Author: Jernej Vivod (vivod.jernej@gmail.com)
 
@@ -141,12 +142,31 @@ def get_data2(data_folder_path):
         file_path (str): path for the xlsx file.
 
     Returns:
-        numpy.ndarray: parsed contents of the xlsx file.
+        (tuple): parsed contents of dataset files (examples and target values).
 
     Raises:
         ValueError
 
     """
     dataset_num = 2
+    return concatenate_data(data_folder_path, dataset_num)
+
+
+def get_data3(data_folder_path):
+    """Get numpy arrays representing the contents of specified datset.
+
+    Author: Jernej Vivod (vivod.jernej@gmail.com)
+
+    Args:
+        file_path (str): path for the xlsx file.
+
+    Returns:
+        (tuple): parsed contents of dataset files (examples and target values).
+
+    Raises:
+        ValueError
+
+    """
+    dataset_num = 3
     return concatenate_data(data_folder_path, dataset_num)
 

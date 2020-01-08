@@ -37,6 +37,7 @@ def get_params(model_type, n_rows=0, n_cols=0, num_classes=0):
                 'n_jobs' : -1,
                 }
     elif model_type == 'lstm':
+        # PARAMETERS FOR LSTM MODEL
         return {
                 'n_rows' : n_rows,
                 'n_cols' : n_cols,
