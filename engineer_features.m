@@ -1,13 +1,13 @@
 
 % Load dataset.
-loaded_data = load('./cached-data/proc_seg_data1.mat');
+loaded_data = load('./cached-data/proc_seg_data3.mat');
 segments = loaded_data.segments;
 
 % Set sampling frequency.
 fs = 300;
 
 % Set length of feature vector.
-len_feature_vec = 300;
+len_feature_vec = 75;
 
 % Initialize final data matrix.
 data = zeros(size(segments, 1), len_feature_vec);
@@ -19,9 +19,9 @@ for idx = 1:size(segments, 1)
 end
 
 
-save('./data/data_fe/data1.mat', 'data');
+save('./data/data_fe/data3.mat', 'data');
 target = loaded_data.seg_target;
-save('./data/data_fe/target1.mat', 'target');
+save('./data/data_fe/target3.mat', 'target');
 
 
 function features = extract_features(segment, fs)

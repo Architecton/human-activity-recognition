@@ -32,7 +32,6 @@ class KClassifier():
             (object): reference to self.
 
         """
-
         self.model.fit(data, target, epochs=self.epochs, batch_size=self.batch_size, shuffle=self.shuffle, verbose=2)
         return self
 

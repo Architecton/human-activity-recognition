@@ -16,21 +16,22 @@ from imblearn.pipeline import Pipeline
 
 
 # Set CV parameters.
-N_SPLITS = 5
-N_REPEATS = 1
+N_SPLITS = 10
+N_REPEATS = 5
 
 # Set resampling method ('none' means no resampling).
 RESAMPLING_METHOD = 'random_oversampling'
 
 # List of models to evaluate.
-EVALUATE = ['fe', 'rf']
+EVALUATE = ['rf']
 
 
 #### (1) DATA PARSING AND PREPROCESSING ############
 
 # Get data.
-DESELECT = [1, 2, 3]
-data = data_preprocessing.get_preprocessed_dataset(dataset_id=1, window_size=120, overlap=0.5, deselect=DESELECT)
+DATASET_ID = 3
+DESELECT = []
+data = data_preprocessing.get_preprocessed_dataset(dataset_id=DATASET_ID, window_size=90, overlap=0.5, deselect=DESELECT)
 segments = data['segments']
 seg_target = data['seg_target']
 seg_target_encoded = data['seg_target_encoded'] 
@@ -108,6 +109,7 @@ if 'rf' in EVALUATE:
     cr_rf = np.zeros((4, len(class_names)))
 
     # Perform CV.
+    idx_it = 1
     for train_idx, test_idx in RepeatedStratifiedKFold(n_splits=N_SPLITS, n_repeats=N_REPEATS).split(segments, seg_target):
         segments_train = np.array([el.flatten() for el in segments[train_idx, :, :]])
         segments_test = np.array([el.flatten() for el in segments[test_idx, :, :]])
@@ -116,7 +118,9 @@ if 'rf' in EVALUATE:
         clf_rf.fit(segments_train, seg_target_train)
         pred_test = clf_rf.predict(segments_test)
         score_acc_rf += accuracy_score(seg_target[test_idx], pred_test)
-        cr_rf = cr_rf + np.array(precision_recall_fscore_support(seg_target_test, pred_test))
+        cr_rf = cr_rf + np.array(precision_recall_fscore_support(seg_target_test, pred_test, labels=list(np.arange(1,len(class_names)+1))))
+        print("RF - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
+        idx_it += 1
 
     # Get mean fold score for RF model.
     cv_score_rf = score_acc_rf / (N_SPLITS*N_REPEATS)
@@ -153,6 +157,7 @@ if 'cnn' in EVALUATE:
     cr_cnn = np.zeros((4, len(class_names)))
 
     # Perform CV.
+    idx_it = 1
     for train_idx, test_idx in RepeatedStratifiedKFold(n_splits=N_SPLITS, n_repeats=N_REPEATS).split(segments, seg_target):
         segments_train = segments[train_idx, :, :, np.newaxis] 
         segments_test = segments[test_idx, :, :, np.newaxis] 
@@ -161,7 +166,9 @@ if 'cnn' in EVALUATE:
         clf_cnn.fit(segments_train, seg_target_encoded_train)
         pred_test = clf_cnn.predict(segments_test)
         scores_acc_cnn += accuracy_score(seg_target[test_idx] - deselect_len, pred_test+1)
-        cr_cnn = cr_cnn + np.array(precision_recall_fscore_support(np.argmax(seg_target_encoded_test, axis=1), pred_test))
+        cr_cnn = cr_cnn + np.array(precision_recall_fscore_support(np.argmax(seg_target_encoded_test, axis=1), pred_test, labels=list(np.arange(1,len(class_names)+1))))
+        print("CNN - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
+        idx_it += 1
 
     # Get mean fold score for CNN model.
     cv_score_cnn = scores_acc_cnn / (N_SPLITS*N_REPEATS)
@@ -197,6 +204,7 @@ if 'lstm' in EVALUATE:
     cr_lstm = np.zeros((4, len(class_names)))
 
     # Perform CV.
+    idx_it = 1
     for train_idx, test_idx in RepeatedStratifiedKFold(n_splits=N_SPLITS, n_repeats=N_REPEATS).split(segments, seg_target):
         segments_train = segments[train_idx, :, :] 
         segments_test = segments[test_idx, :, :] 
@@ -205,7 +213,9 @@ if 'lstm' in EVALUATE:
         clf_lstm.fit(segments_train, seg_target_encoded_train)
         pred_test = clf_lstm.predict(segments_test)
         scores_acc_lstm += accuracy_score(seg_target[test_idx] - deselect_len, pred_test+1)
-        cr_lstm = cr_lstm + np.array(precision_recall_fscore_support(np.argmax(seg_target_encoded_test, axis=1), pred_test))
+        cr_lstm = cr_lstm + np.array(precision_recall_fscore_support(np.argmax(seg_target_encoded_test, axis=1), pred_test, labels=list(np.arange(1,len(class_names)+1))))
+        print("LSTM - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
+        idx_it += 1
     
     # Get mean fold score for LSTM model.
     cv_score_lstm = scores_acc_lstm / N_SPLITS
@@ -221,9 +231,10 @@ if 'lstm' in EVALUATE:
 
 # If evaluating feature engineering method:
 if 'fe' in EVALUATE:
-    data_fe = sio.loadmat('./data/data_fe/data1.mat')['data']
-    target_fe = np.ravel(sio.loadmat('./data/data_fe/target1.mat')['target'])
 
+    # Parse data.
+    data_fe = sio.loadmat('./data/data_fe/data' + str(DATASET_ID) + '.mat')['data']
+    target_fe = np.ravel(sio.loadmat('./data/data_fe/target' + str(DATASET_ID) + '.mat')['target'])
     data_fe[np.isnan(data_fe)] = 0.0
      
     # Initialize random forest model with specified parameters.
@@ -239,8 +250,8 @@ if 'fe' in EVALUATE:
     # Initilize array for accumulating classification scoring reports.
     cr_fe = np.zeros((4, len(class_names)))
 
-
     # Perform CV.
+    idx_it = 1
     for train_idx, test_idx in RepeatedStratifiedKFold(n_splits=N_SPLITS, n_repeats=N_REPEATS).split(data_fe, target_fe):
         data_train = data_fe[train_idx, :]
         data_test = data_fe[test_idx, :]
@@ -249,7 +260,9 @@ if 'fe' in EVALUATE:
         clf_rf.fit(data_train, target_train)
         pred_test = clf_rf.predict(data_test)
         score_acc_fe += accuracy_score(target_test, pred_test)
-        cr_fe = cr_fe + np.array(precision_recall_fscore_support(target_test, pred_test))
+        cr_fe = cr_fe + np.array(precision_recall_fscore_support(target_test, pred_test, labels=list(np.arange(1,len(class_names)+1))))
+        print("FE - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
+        idx_it += 1
 
     # Get mean fold score for RF model.
     cv_score_fe = score_acc_fe / (N_SPLITS*N_REPEATS)
@@ -257,8 +270,6 @@ if 'fe' in EVALUATE:
 
     # Write classification scoring report.
     format_clf_report(cv_cr_fe, "Feature Engineering", class_names, CLF_REPORTS_PATH)
-
-
 
 ####################################################
 

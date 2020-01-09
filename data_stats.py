@@ -25,10 +25,10 @@ def plot_class_counts(target, class_names, title, save_path):
     class_counts_normalized = class_counts / sum(class_counts)
     
     # Plot histogram of relative frequencies of class values.
-    plt.bar(np.arange(len(class_names)), class_counts_normalized, align='center', alpha=0.5)
-    plt.xticks(np.arange(len(class_names)), class_names)
-    plt.xticks(rotation=35)
-    plt.ylabel('frequency')
+    plt.bar(np.arange(len(class_names)), class_counts_normalized, align='center')
+    plt.xticks(np.arange(len(class_names)), class_names, fontsize=15)
+    plt.xticks(rotation=45)
+    plt.ylabel('frequency', fontsize=15)
     # plt.title(title)
     plt.tight_layout()
     plt.savefig(save_path)
@@ -37,7 +37,7 @@ def plot_class_counts(target, class_names, title, save_path):
 
 
 # Get preprocessed data.
-data = data_preprocessing.get_preprocessed_dataset(dataset_id=2, window_size=154, overlap=0.5, deselect=[])
+data = data_preprocessing.get_preprocessed_dataset(dataset_id=3, window_size=154, overlap=0.5, deselect=[])
 
 
 # Get non-segmented and segmented data class values.

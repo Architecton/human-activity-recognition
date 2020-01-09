@@ -46,7 +46,7 @@ def get_confusion_matrix(clf, data, target, clf_name, cm_save_path):
                                  cmap=plt.cm.Blues,
                                  normalize='true',
                                  xticks_rotation='vertical')
-    disp.ax_.set_title("Normalized Confusion Matrix - " + clf_name)
+    # disp.ax_.set_title("Normalized Confusion Matrix - " + clf_name)
     disp.figure_.set_size_inches(9.0, 9.0, forward=True)
     plt.tight_layout()
     plt.savefig(cm_save_path)
@@ -54,20 +54,27 @@ def get_confusion_matrix(clf, data, target, clf_name, cm_save_path):
     plt.close()
 
 
+# List of models for which to plot the confusion matrices.
+EVALUATE = ['lstm']
+
+
 # Set resampling method ('none' means no resampling).
 RESAMPLING_METHOD = 'random_oversampling'
 
-# Get data.
-data =  data_preprocessing.get_preprocessed_dataset()
+### GET DATA ###
+DATASET_ID = 1
+DESELECT = []
+data = data_preprocessing.get_preprocessed_dataset(dataset_id=DATASET_ID, window_size=120, overlap=0.5, deselect=DESELECT)
 
 segments = data['segments']
 seg_target = data['seg_target']
 seg_target_encoded = data['seg_target_encoded']
 class_names = data['class_names']
 
-data_fe = sio.loadmat('./data/data_fe/data1.mat')['data']
-data_fe[np.isnan(data_fe)] = 0.0
-target_fe = np.ravel(sio.loadmat('./data/data_fe/target1.mat')['target'])
+if 'fe' in  EVALUATE:
+    data_fe = sio.loadmat('./data/data_fe/data' + str(DATASET_ID) + '.mat')['data']
+    data_fe[np.isnan(data_fe)] = 0.0
+    target_fe = np.ravel(sio.loadmat('./data/data_fe/target' + str(DATASET_ID) + '.mat')['target'])
 
 
 #### GET MODEL CONFUSION MATRICES ####
@@ -76,7 +83,7 @@ target_fe = np.ravel(sio.loadmat('./data/data_fe/target1.mat')['target'])
 EPOCHS_CNN = 10
 BATCH_SIZE_CNN = 10
 
-EPOCHS_LSTM = 10
+EPOCHS_LSTM = 50
 BATCH_SIZE_LSTM = 10
 
 ### Initialize models. ###
@@ -108,10 +115,14 @@ clf_rf._kind = 'rf'
 
 ### Plot and save confusion matrices ###
 
-# get_confusion_matrix(clf_cnn, segments[:, :, :, np.newaxis], seg_target_encoded, 'CNN',  './plots/conf_mat_cnn.svg')
-# get_confusion_matrix(clf_lstm, segments, seg_target_encoded, 'LSTM', './plots/conf_mat_lstm.svg')
-# get_confusion_matrix(clf_rf, np.array([el.flatten() for el in segments]), seg_target, 'Random Forest', './plots/conf_mat_rf.svg')
-get_confusion_matrix(clf_rf, data_fe, target_fe, 'Random Forest - Engineered Features', './plots/conf_mat_fe.svg')
+if 'cnn' in EVALUATE:
+    get_confusion_matrix(clf_cnn, segments[:, :, :, np.newaxis], seg_target_encoded, 'CNN',  './plots/conf_mat_cnn.eps')
+if 'lstm' in EVALUATE:
+    get_confusion_matrix(clf_lstm, segments, seg_target_encoded, 'LSTM', './plots/conf_mat_lstm.eps')
+if 'rf' in EVALUATE:
+    get_confusion_matrix(clf_rf, np.array([el.flatten() for el in segments]), seg_target, 'Random Forest', './plots/conf_mat_rf.eps')
+if 'fe' in EVALUATE: 
+    get_confusion_matrix(clf_rf, data_fe, target_fe, 'Random Forest - Engineered Features', './plots/conf_mat_fe.eps')
 
 ######################################
 

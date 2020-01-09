@@ -5,5 +5,5 @@ stand-to-walk
 stand-to-sit
 sit-to-stand
 walk-to-stand
-stand-to-walk
+sit-to-walk
 walk-to-sit

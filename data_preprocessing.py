@@ -148,8 +148,6 @@ def get_preprocessed_dataset(dataset_id=1, window_size=-1.0, overlap=-1.0, desel
             data = data[~msk_deselection, :]
             class_names = [class_names[idx-1] for idx in np.arange(len(class_names)) if idx not in deselect]
         
-        import pdb
-        pdb.set_trace()
         # Normalize data.
         data_normalized = normalize_data(data)
 
