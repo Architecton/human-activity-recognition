@@ -126,18 +126,18 @@ def get_preprocessed_dataset(dataset_id=1, window_size=-1.0, overlap=-1.0, desel
     if parse:
         
         # Parse class names for selected dataset.
-        with open('./data/data' + str(dataset_id) + '/labels.txt', 'r') as f:
+        with open('./datasets/data' + str(dataset_id) + '/labels.txt', 'r') as f:
             class_names = [el.strip() for el in f.readlines()]
 
         # Else, parse data, preprocess, segment and persist.
         if dataset_id == 1:
-            data, target = data_parsing.get_data1('./data/data' + str(dataset_id) + '/')
+            data, target = data_parsing.get_data1('./datasets/data' + str(dataset_id) + '/')
         elif dataset_id == 2:
-            data, target = data_parsing.get_data2('./data/data' + str(dataset_id) + '/')
+            data, target = data_parsing.get_data2('./datasets/data' + str(dataset_id) + '/')
             data = data[target != 0, :]
             target = target[target != 0]
         elif dataset_id == 3:
-            data, target = data_parsing.get_data3('./data/data' + str(dataset_id) + '/')
+            data, target = data_parsing.get_data3('./datasets/data' + str(dataset_id) + '/')
         else:
             raise ValueError('Unknown value of dataset index {0}'.format(dataset_id))
 
