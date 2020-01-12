@@ -29,7 +29,7 @@ EVALUATE = ['cnn']
 #### (1) DATA PARSING AND PREPROCESSING ############
 
 # Get data.
-DATASET_ID = 3
+DATASET_ID = 1
 DESELECT = []
 data = data_preprocessing.get_preprocessed_dataset(dataset_id=DATASET_ID, window_size=120, overlap=0.5, deselect=DESELECT)
 segments = data['segments']
