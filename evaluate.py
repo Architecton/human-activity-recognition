@@ -23,7 +23,7 @@ N_REPEATS = 5
 RESAMPLING_METHOD = 'random_oversampling'
 
 # List of models to evaluate.
-EVALUATE = ['rf']
+EVALUATE = ['cnn']
 
 
 #### (1) DATA PARSING AND PREPROCESSING ############
@@ -31,7 +31,7 @@ EVALUATE = ['rf']
 # Get data.
 DATASET_ID = 3
 DESELECT = []
-data = data_preprocessing.get_preprocessed_dataset(dataset_id=DATASET_ID, window_size=90, overlap=0.5, deselect=DESELECT)
+data = data_preprocessing.get_preprocessed_dataset(dataset_id=DATASET_ID, window_size=120, overlap=0.5, deselect=DESELECT)
 segments = data['segments']
 seg_target = data['seg_target']
 seg_target_encoded = data['seg_target_encoded'] 
@@ -233,8 +233,8 @@ if 'lstm' in EVALUATE:
 if 'fe' in EVALUATE:
 
     # Parse data.
-    data_fe = sio.loadmat('./data/data_fe/data' + str(DATASET_ID) + '.mat')['data']
-    target_fe = np.ravel(sio.loadmat('./data/data_fe/target' + str(DATASET_ID) + '.mat')['target'])
+    data_fe = sio.loadmat('./datasets/data_fe/data' + str(DATASET_ID) + '.mat')['data']
+    target_fe = np.ravel(sio.loadmat('./datasets/data_fe/target' + str(DATASET_ID) + '.mat')['target'])
     data_fe[np.isnan(data_fe)] = 0.0
      
     # Initialize random forest model with specified parameters.

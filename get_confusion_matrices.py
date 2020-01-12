@@ -34,7 +34,9 @@ def get_confusion_matrix(clf, data, target, clf_name, cm_save_path):
     """
 
     # Split data into training and test sets.
-    data_train, data_test, target_train, target_test = train_test_split(data, target, random_state=0)
+    data_train, data_test, target_train, target_test = train_test_split(data, target, random_state=0, 
+            stratify=target if clf._kind == 'rf' else np.argmax(target, axis=1))
+
 
     # Fit model.
     clf.fit(data_train, target_train)
@@ -55,7 +57,7 @@ def get_confusion_matrix(clf, data, target, clf_name, cm_save_path):
 
 
 # List of models for which to plot the confusion matrices.
-EVALUATE = ['lstm']
+EVALUATE = ['fe']
 
 
 # Set resampling method ('none' means no resampling).
@@ -72,9 +74,9 @@ seg_target_encoded = data['seg_target_encoded']
 class_names = data['class_names']
 
 if 'fe' in  EVALUATE:
-    data_fe = sio.loadmat('./data/data_fe/data' + str(DATASET_ID) + '.mat')['data']
+    data_fe = sio.loadmat('./datasets/data_fe/data' + str(DATASET_ID) + '.mat')['data']
     data_fe[np.isnan(data_fe)] = 0.0
-    target_fe = np.ravel(sio.loadmat('./data/data_fe/target' + str(DATASET_ID) + '.mat')['target'])
+    target_fe = np.ravel(sio.loadmat('./datasets/data_fe/target' + str(DATASET_ID) + '.mat')['target'])
 
 
 #### GET MODEL CONFUSION MATRICES ####
