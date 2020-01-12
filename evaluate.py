@@ -139,7 +139,7 @@ if 'cnn' in EVALUATE:
 
     # Set CNN model training parameters.
     BATCH_SIZE_CNN = 32
-    EPOCHS_CNN = 10
+    EPOCHS_CNN = 1
 
     # Initialize CNN model with specified parameters.
     model_cnn = models.get_cnn_model(**model_params.get_params('cnn', n_rows=segments[0].shape[0], n_cols=segments[0].shape[1], num_classes=np.unique(seg_target).size))
@@ -164,9 +164,11 @@ if 'cnn' in EVALUATE:
         seg_target_encoded_train = seg_target_encoded[train_idx, :]
         seg_target_encoded_test = seg_target_encoded[test_idx, :]
         clf_cnn.fit(segments_train, seg_target_encoded_train)
+        import pdb
+        pdb.set_trace()
         pred_test = clf_cnn.predict(segments_test)
         scores_acc_cnn += accuracy_score(seg_target[test_idx] - deselect_len, pred_test+1)
-        cr_cnn = cr_cnn + np.array(precision_recall_fscore_support(np.argmax(seg_target_encoded_test, axis=1)+1, pred_test, labels=list(np.arange(len(class_names)))))
+        cr_cnn = cr_cnn + np.array(precision_recall_fscore_support(np.argmax(seg_target_encoded_test, axis=1), pred_test, labels=list(np.arange(len(class_names)))))
         print("CNN - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
         idx_it += 1
 
