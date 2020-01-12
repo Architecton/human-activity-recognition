@@ -18,6 +18,7 @@ Model | CV Score
 ----------------
 RF    | 0.8730
 
+DATASET 3
 Date: 12/01/2020 13:47:02
 Window size: 120
 Overlap: 0.5
@@ -26,3 +27,36 @@ Deselected: []
 Model | CV Score
 ----------------
 RF    | 0.8441
+
+
+
+# DATASET 1
+Date: 12/01/2020 14:15:39
+Window size: 120
+Overlap: 0.5
+Deselected: []
+
+Model | CV Score
+----------------
+FE  | 0.9361
+
+# DATASET 2
+Date: 12/01/2020 14:19:28
+Window size: 120
+Overlap: 0.5
+Deselected: []
+
+Model | CV Score
+----------------
+FE  | 0.9177
+
+
+DATASET 3
+Date: 12/01/2020 14:34:26
+Window size: 120
+Overlap: 0.5
+Deselected: []
+
+Model | CV Score
+----------------
+FE  | 0.9677
