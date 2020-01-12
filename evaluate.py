@@ -16,8 +16,8 @@ from imblearn.pipeline import Pipeline
 
 
 # Set CV parameters.
-N_SPLITS = 10
-N_REPEATS = 5
+N_SPLITS = 5
+N_REPEATS = 10
 
 # Set resampling method ('none' means no resampling).
 RESAMPLING_METHOD = 'random_oversampling'
@@ -29,7 +29,7 @@ EVALUATE = ['cnn']
 #### (1) DATA PARSING AND PREPROCESSING ############
 
 # Get data.
-DATASET_ID = 1
+DATASET_ID = 3
 DESELECT = []
 data = data_preprocessing.get_preprocessed_dataset(dataset_id=DATASET_ID, window_size=120, overlap=0.5, deselect=DESELECT)
 segments = data['segments']
@@ -166,7 +166,7 @@ if 'cnn' in EVALUATE:
         clf_cnn.fit(segments_train, seg_target_encoded_train)
         pred_test = clf_cnn.predict(segments_test)
         scores_acc_cnn += accuracy_score(seg_target[test_idx] - deselect_len, pred_test+1)
-        cr_cnn = cr_cnn + np.array(precision_recall_fscore_support(np.argmax(seg_target_encoded_test, axis=1), pred_test, labels=list(np.arange(1,len(class_names)+1))))
+        cr_cnn = cr_cnn + np.array(precision_recall_fscore_support(np.argmax(seg_target_encoded_test, axis=1)+1, pred_test, labels=list(np.arange(1,len(class_names)+1))))
         print("CNN - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
         idx_it += 1
 
@@ -213,12 +213,12 @@ if 'lstm' in EVALUATE:
         clf_lstm.fit(segments_train, seg_target_encoded_train)
         pred_test = clf_lstm.predict(segments_test)
         scores_acc_lstm += accuracy_score(seg_target[test_idx] - deselect_len, pred_test+1)
-        cr_lstm = cr_lstm + np.array(precision_recall_fscore_support(np.argmax(seg_target_encoded_test, axis=1), pred_test, labels=list(np.arange(1,len(class_names)+1))))
+        cr_lstm = cr_lstm + np.array(precision_recall_fscore_support(np.argmax(seg_target_encoded_test, axis=1)+1, pred_test, labels=list(np.arange(1,len(class_names)+1))))
         print("LSTM - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
         idx_it += 1
     
     # Get mean fold score for LSTM model.
-    cv_score_lstm = scores_acc_lstm / N_SPLITS
+    cv_score_lstm = scores_acc_lstm / (N_SPLITS*N_REPEATS)
     cv_cr_lstm = cr_lstm / (N_SPLITS*N_REPEATS)
 
     # Write classification scoring report.

@@ -1,0 +1,36 @@
+
+Date: 12/01/2020 13:00:38
+Model: Random Forest
+Window size: 120
+Overlap: 0.5
+Deselected: []
+
+standing      Sitting       walking       stand-to-walk stand-to-sit  sit-to-stand  walk-to-stand sit-to-walk   walk-to-sit  
+Precision  0.9287 0.9612 0.9381 0.0200 0.4400 0.0000 0.0000 0.7154 0.71
+Recall  0.9521 0.9916 0.9899 0.0040 0.2067 0.0000 0.0000 0.5367 0.49
+F-Score  0.9400 0.9761 0.9632 0.0067 0.2800 0.0000 0.0000 0.5824 0.5475
+Support  66.8000 80.8000 172.2000 4.6000 2.2000 1.0000 4.0000 5.2000 4.4000
+
+Date: 12/01/2020 13:22:59
+Model: Random Forest
+Window size: 120
+Overlap: 0.5
+Deselected: []
+
+working-at-computer  stand-up-up-stairs   standing             walking              going-down-up-stairs walking-talking      talking-standing    
+Precision  0.9594 0.7693 0.7394 0.8028 0.8163 0.6845 0.89
+Recall  0.9678 0.2347 0.6438 0.9570 0.3069 0.2531 0.96
+F-Score  0.9636 0.3573 0.6879 0.8731 0.4439 0.3669 0.9246
+Support  606.8000 66.8000 245.8000 416.6000 55.0000 54.2000 837.0000
+
+Date: 12/01/2020 13:47:02
+Model: Random Forest
+Window size: 120
+Overlap: 0.5
+Deselected: []
+
+downstairs jogging    sitting    standing   upstairs   walking   
+Precision  0.8416 0.9128 0.9948 0.9907 0.8175 0.77
+Recall  0.2708 0.9839 0.9775 0.9839 0.3379 0.98
+F-Score  0.4093 0.9470 0.9861 0.9872 0.4779 0.8654
+Support  326.4000 1086.8000 183.4000 148.0000 394.4000 1356.0000
