@@ -50,11 +50,11 @@ except:
     raise ValueError("Bad evaluation parameters")
 
 # Set CV parameters.
-N_SPLITS = 5
-N_REPEATS = 1
+N_SPLITS = 10
+N_REPEATS = 5
 
 # Set resampling method ('none' means no resampling).
-RESAMPLING_METHOD = 'random_oversampling'
+RESAMPLING_METHOD = 'none'
 
 # List of models to evaluate.
 EVALUATE = args.methods
@@ -62,7 +62,7 @@ EVALUATE = args.methods
 #### (1) DATA PARSING AND PREPROCESSING ############
 
 # Specify dataset id.
-DATASET_ID = 1 # int(args.dataset[0])
+DATASET_ID = int(args.dataset[0])
 
 # Specify indices of features to deselect.
 DESELECT = []
