@@ -2,6 +2,7 @@ import numpy as np
 import scipy.io as sio
 import os
 import datetime
+import argparse
 
 import data_preprocessing
 import models
@@ -15,36 +16,79 @@ from sklearn.metrics import confusion_matrix, accuracy_score, precision_recall_f
 from imblearn.pipeline import Pipeline
 
 
+# Parse evaluation parameters (dataset id and methods to evaluate).
+parser = argparse.ArgumentParser(description='Human activity recognition method evaluation')
+parser.add_argument('--methods', metavar='METHOD', nargs='+', help='method to evaluate (rf, cnn, lstm or fe)')
+parser.add_argument('--dataset', metavar='DATASET', nargs=1, help='dataset id (1, 2 or 3)')
+
+# Make list of valid methods.
+VALID_METHODS = ['rf', 'cnn', 'lstm', 'fe']
+
+# Make list of valid dataset ids.
+VALID_DATASET_IDS = [1, 2, 3]
+
+# Parse evaluation parameters.
+try:
+    # Parse arguments.
+    args = parser.parse_args()
+    
+    # Check if all evaluation parameters specified.
+    if args.methods != None and args.dataset != None:
+
+        # Check if methods is valid.
+        for method in args.methods:
+            if method not in VALID_METHODS:
+                raise ValueError("Unknown method specified")
+
+        # Check if dataset id is valid.
+        if int(args.dataset[0]) not in VALID_DATASET_IDS:
+            raise ValueError("Unknown dataset id specified")
+    else:
+        raise ValueError("Missing evaluation parameters")
+
+except:
+    raise ValueError("Bad evaluation parameters")
+
 # Set CV parameters.
 N_SPLITS = 5
-N_REPEATS = 10
+N_REPEATS = 1
 
 # Set resampling method ('none' means no resampling).
 RESAMPLING_METHOD = 'random_oversampling'
 
 # List of models to evaluate.
-EVALUATE = ['cnn']
-
+EVALUATE = args.methods
 
 #### (1) DATA PARSING AND PREPROCESSING ############
 
-# Get data.
-DATASET_ID = 1
+# Specify dataset id.
+DATASET_ID = int(args.dataset[0])
+
+# Specify indices of features to deselect.
 DESELECT = []
-data = data_preprocessing.get_preprocessed_dataset(dataset_id=DATASET_ID, window_size=120, overlap=0.5, deselect=DESELECT)
+
+# Parse sampling frequency for selected dataset.
+with open('./datasets/data' + str(DATASET_ID) + '/fs.txt', 'r') as f:
+    sampling_frequency = int(f.readline().strip())
+
+# Set number of seconds in each window and calculate window size.
+NUM_SECONDS_WINDOW = 3
+WINDOW_SIZE = sampling_frequency*NUM_SECONDS_WINDOW
+
+# Get preprocessed data.
+data = data_preprocessing.get_preprocessed_dataset(dataset_id=DATASET_ID, window_size=WINDOW_SIZE, overlap=0.5, deselect=DESELECT)
 segments = data['segments']
 seg_target = data['seg_target']
 seg_target_encoded = data['seg_target_encoded'] 
 deselect_len = len(data['deselect'])
 class_names = data['class_names']
 
-
 ####################################################
 
-
+# Set path for classification reports file.
 CLF_REPORTS_PATH = './results/clf_reports.txt'
 
-def format_clf_report(clf_report, clf_name, class_names, save_path):
+def format_clf_report(clf_report, clf_name, class_names, dataset_id, save_path): 
     """Print classification statistics to file.
 
     Author: Jernej Vivod (vivod.jernej@gmail.com)
@@ -65,6 +109,7 @@ def format_clf_report(clf_report, clf_name, class_names, save_path):
         f.write('Window size: {0}\n'.format(data['window_size']))
         f.write('Overlap: {0}\n'.format(data['overlap']))
         f.write('Deselected: {0}\n'.format(data['deselect']))
+        f.write('Dataset: {0}\n'.format(dataset_id))
         f.write('\n')
         for idx in np.arange(len(class_names)-1):
             f.write('{0} '.format(class_names[idx]))
@@ -95,6 +140,7 @@ def format_clf_report(clf_report, clf_name, class_names, save_path):
 
 # If evaluating RF model.
 if 'rf' in EVALUATE:
+
     # Initialize random forest model with specified parameters.
     clf_rf = models.get_rf_model(**model_params.get_params('rf'))
 
@@ -124,10 +170,12 @@ if 'rf' in EVALUATE:
 
     # Get mean fold score for RF model.
     cv_score_rf = score_acc_rf / (N_SPLITS*N_REPEATS)
+
+    # Get mean classification report for RF model.
     cv_cr_rf = cr_rf / (N_SPLITS*N_REPEATS)
 
     # Write classification scoring report.
-    format_clf_report(cv_cr_rf, "Random Forest", class_names, CLF_REPORTS_PATH)
+    format_clf_report(cv_cr_rf, "Random Forest", class_names, DATASET_ID, CLF_REPORTS_PATH)
 
 ####################################################
 
@@ -172,10 +220,12 @@ if 'cnn' in EVALUATE:
 
     # Get mean fold score for CNN model.
     cv_score_cnn = scores_acc_cnn / (N_SPLITS*N_REPEATS)
+
+    # Get mean classification report for CNN model.
     cv_cr_cnn = cr_cnn / (N_SPLITS*N_REPEATS)
 
     # Write classification scoring report.
-    format_clf_report(cv_cr_cnn, "CNN", class_names, CLF_REPORTS_PATH)
+    format_clf_report(cv_cr_cnn, "CNN", class_names, DATASET_ID, CLF_REPORTS_PATH)
 
 ####################################################
 
@@ -219,10 +269,12 @@ if 'lstm' in EVALUATE:
     
     # Get mean fold score for LSTM model.
     cv_score_lstm = scores_acc_lstm / (N_SPLITS*N_REPEATS)
+
+    # Get mean classification report for LSTM model.
     cv_cr_lstm = cr_lstm / (N_SPLITS*N_REPEATS)
 
     # Write classification scoring report.
-    format_clf_report(cv_cr_lstm, "LSTM", class_names, CLF_REPORTS_PATH)
+    format_clf_report(cv_cr_lstm, "LSTM", class_names, DATASET_ID, CLF_REPORTS_PATH)
 
 ####################################################
 
@@ -266,17 +318,22 @@ if 'fe' in EVALUATE:
 
     # Get mean fold score for RF model.
     cv_score_fe = score_acc_fe / (N_SPLITS*N_REPEATS)
+
+    # Get mean classification report for feature engineering method.
     cv_cr_fe = cr_fe / (N_SPLITS*N_REPEATS)
 
     # Write classification scoring report.
-    format_clf_report(cv_cr_fe, "Feature Engineering", class_names, CLF_REPORTS_PATH)
+    format_clf_report(cv_cr_fe, "Feature Engineering", class_names, DATASET_ID, CLF_REPORTS_PATH)
 
 ####################################################
 
 
 #### SAVE RESULTS TO FILE ##########################
 
+# Set path to results file.
 RESULTS_PATH = './results/results.txt'
+
+# Open results file and append results.
 with open(RESULTS_PATH, 'a') as f:
     if os.path.isfile(RESULTS_PATH) and os.path.getsize(RESULTS_PATH) > 0:
         f.write('\n')
@@ -285,6 +342,7 @@ with open(RESULTS_PATH, 'a') as f:
     f.write('Window size: {0}\n'.format(data['window_size']))
     f.write('Overlap: {0}\n'.format(data['overlap']))
     f.write('Deselected: {0}\n'.format(data['deselect']))
+    f.write('Dataset: {0}\n'.format(DATASET_ID))
     f.write('\n')
     f.write('Model | CV Score\n')
     f.write('----------------\n')

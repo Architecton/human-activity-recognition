@@ -29,6 +29,7 @@ def plot_class_counts(target, class_names, title, save_path):
     plt.xticks(np.arange(len(class_names)), class_names, fontsize=15)
     plt.xticks(rotation=45)
     plt.ylabel('frequency', fontsize=15)
+    # UNCOMMENT TO SET TITLE.
     # plt.title(title)
     plt.tight_layout()
     plt.savefig(save_path)

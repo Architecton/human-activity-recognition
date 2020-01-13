@@ -98,6 +98,7 @@ def get_resampler(resampling_method):
 
 
     elif resampling_method == 'smote_tomek':
+
         class SmoteTomek():
             def __init__(self):
                 self.smotetmk = imblearn.combine.SMOTETomek()
@@ -113,5 +114,6 @@ def get_resampler(resampling_method):
 
             def fit_resample(self, data, target):
                 return self.fit_sample(data, target)
+
         return SmoteTomek()
 

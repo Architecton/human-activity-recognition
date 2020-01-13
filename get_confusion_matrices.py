@@ -48,6 +48,8 @@ def get_confusion_matrix(clf, data, target, clf_name, cm_save_path):
                                  cmap=plt.cm.Blues,
                                  normalize='true',
                                  xticks_rotation='vertical')
+
+    # UNCOMMENT TO SET TITLE.
     # disp.ax_.set_title("Normalized Confusion Matrix - " + clf_name)
     disp.figure_.set_size_inches(9.0, 9.0, forward=True)
     plt.tight_layout()
@@ -64,6 +66,7 @@ EVALUATE = ['fe']
 RESAMPLING_METHOD = 'random_oversampling'
 
 ### GET DATA ###
+
 DATASET_ID = 1
 DESELECT = []
 data = data_preprocessing.get_preprocessed_dataset(dataset_id=DATASET_ID, window_size=120, overlap=0.5, deselect=DESELECT)
@@ -73,6 +76,7 @@ seg_target = data['seg_target']
 seg_target_encoded = data['seg_target_encoded']
 class_names = data['class_names']
 
+# If evaluating feature engineering method, parse feature engineered data from .mat file.
 if 'fe' in  EVALUATE:
     data_fe = sio.loadmat('./datasets/data_fe/data' + str(DATASET_ID) + '.mat')['data']
     data_fe[np.isnan(data_fe)] = 0.0
@@ -83,10 +87,10 @@ if 'fe' in  EVALUATE:
 
 # NN training parameters
 EPOCHS_CNN = 10
-BATCH_SIZE_CNN = 10
+BATCH_SIZE_CNN = 32
 
 EPOCHS_LSTM = 50
-BATCH_SIZE_LSTM = 10
+BATCH_SIZE_LSTM = 32
 
 ### Initialize models. ###
 

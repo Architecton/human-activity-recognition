@@ -1,1 +1,0 @@
-10. 1. 2019 - confusion matrix for LSTM model on first dataset.

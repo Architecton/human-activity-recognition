@@ -40,7 +40,7 @@ def segment_data(data, target, window_size, overlap):
 
 
 def normalize_data(data):
-    """Normalize data to mean 0 and standard deviation of 1
+    """Normalize data to mean 0 and standard deviation of 1.
 
     Author: Jernej Vivod (vivod.jernej@gmail.com)
 
@@ -177,7 +177,7 @@ def get_preprocessed_dataset(dataset_id=1, window_size=-1.0, overlap=-1.0, desel
             'target' : target, 
             'window_size' : window_size,
             'overlap' : overlap,
-            'class_names' : class_names, 
             'deselect' : deselect,
+            'class_names' : class_names, 
             }
 

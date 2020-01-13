@@ -18,7 +18,7 @@ def get_params(model_type, n_rows=0, n_cols=0, num_classes=0):
     """
 
     if model_type == 'cnn':
-        # PARAMETERS FOR CNN MODEL
+        # Return parameters for CNN model.
         return {
                 'n_rows' : n_rows, 
                 'n_cols' : n_cols,
@@ -31,13 +31,13 @@ def get_params(model_type, n_rows=0, n_cols=0, num_classes=0):
                 'num_neurons_fcl2' : 128,
                 }
     elif model_type == 'rf':
-        # PARAMETERS FOR RANDOM FOREST MODEL
+        # Return parameters for RF model.
         return {
                 'n_estimators' : 100,
                 'n_jobs' : -1,
                 }
     elif model_type == 'lstm':
-        # PARAMETERS FOR LSTM MODEL
+        # Return parameters for LSTM model.
         return {
                 'n_rows' : n_rows,
                 'n_cols' : n_cols,
