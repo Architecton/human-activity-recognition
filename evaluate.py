@@ -50,7 +50,7 @@ except:
     raise ValueError("Bad evaluation parameters")
 
 # Set CV parameters.
-N_SPLITS = 10
+N_SPLITS = 5
 N_REPEATS = 1
 
 # Set resampling method ('none' means no resampling).
@@ -62,7 +62,7 @@ EVALUATE = args.methods
 #### (1) DATA PARSING AND PREPROCESSING ############
 
 # Specify dataset id.
-DATASET_ID = int(args.dataset[0])
+DATASET_ID = 1 # int(args.dataset[0])
 
 # Specify indices of features to deselect.
 DESELECT = []
@@ -197,7 +197,6 @@ if 'cnn' in EVALUATE:
     if RESAMPLING_METHOD != 'none':
         clf_cnn = Pipeline([('resampler', resampling.get_resampler(RESAMPLING_METHOD)), ('clf', clf_cnn)])
 
-
     # Initialize accumulator for fold results.
     scores_acc_cnn = 0
 
@@ -234,7 +233,7 @@ if 'cnn' in EVALUATE:
 
 # If evaluating LSTM model.
 if 'lstm' in EVALUATE:
-
+        
     # Set LSTM model training parameters.
     BATCH_SIZE_LSTM = 32
     EPOCHS_LSTM = 50
