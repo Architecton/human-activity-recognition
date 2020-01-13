@@ -50,8 +50,8 @@ except:
     raise ValueError("Bad evaluation parameters")
 
 # Set CV parameters.
-N_SPLITS = 10
-N_REPEATS = 5
+N_SPLITS = 5
+N_REPEATS = 10
 
 # Set resampling method ('none' means no resampling).
 RESAMPLING_METHOD = 'none'

@@ -38,7 +38,7 @@ def plot_class_counts(target, class_names, title, save_path):
 
 
 # Get preprocessed data.
-data = data_preprocessing.get_preprocessed_dataset(dataset_id=3, window_size=154, overlap=0.5, deselect=[])
+data = data_preprocessing.get_preprocessed_dataset(dataset_id=1, window_size=154, overlap=0.5, deselect=[])
 
 
 # Get non-segmented and segmented data class values.
