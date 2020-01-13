@@ -1,5 +1,5 @@
 # human-activity-recognition
-Implementations and evaluations of various approaches to human activity recognition from accelerometer data.
+This repository contains implementations and evaluations of various approaches to human activity recognition from accelerometer data.
 
 ## Files contained in this repository
 - **data\_parsing.py** contains functionality related to parsing data from the dataset folders,
