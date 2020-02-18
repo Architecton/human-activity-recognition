@@ -37,7 +37,6 @@ def get_confusion_matrix(clf, data, target, clf_name, cm_save_path):
     data_train, data_test, target_train, target_test = train_test_split(data, target, random_state=0, 
             stratify=target if clf._kind == 'rf' else np.argmax(target, axis=1))
 
-
     # Fit model.
     clf.fit(data_train, target_train)
     np.set_printoptions(precision=2)

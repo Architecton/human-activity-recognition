@@ -11,43 +11,22 @@ import resampling
 from KClassifier import KClassifier
 
 from sklearn.model_selection import RepeatedStratifiedKFold
+from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_recall_fscore_support
 
 from imblearn.pipeline import Pipeline
 
-
 # Parse evaluation parameters (dataset id and methods to evaluate).
 parser = argparse.ArgumentParser(description='Human activity recognition method evaluation')
-parser.add_argument('--methods', metavar='METHOD', nargs='+', help='method to evaluate (rf, cnn, lstm or fe)')
-parser.add_argument('--dataset', metavar='DATASET', nargs=1, help='dataset id (1, 2 or 3)')
+parser.add_argument('--method', type=str, metavar='METHOD', nargs='+', default=['rf', 'cnn', 'lstm', 'fe'], 
+        choices=['rf', 'cnn', 'lstm', 'fe'], help='method to evaluate (rf, cnn, lstm or fe)')
+parser.add_argument('--eval-method', type=str, metavar='EVAL_METHOD', default='cv', 
+        choices=['tts', 'cv'], help='evaluation method (tts or cv)')
+parser.add_argument('--dataset', type=int, metavar='DATASET', default=1, 
+        choices=[1, 2, 3], help='dataset id (1, 2 or 3)')
 
-# Make list of valid methods.
-VALID_METHODS = ['rf', 'cnn', 'lstm', 'fe']
-
-# Make list of valid dataset ids.
-VALID_DATASET_IDS = [1, 2, 3]
-
-# Parse evaluation parameters.
-try:
-    # Parse arguments.
-    args = parser.parse_args()
-    
-    # Check if all evaluation parameters specified.
-    if args.methods != None and args.dataset != None:
-
-        # Check if methods is valid.
-        for method in args.methods:
-            if method not in VALID_METHODS:
-                raise ValueError("Unknown method specified")
-
-        # Check if dataset id is valid.
-        if int(args.dataset[0]) not in VALID_DATASET_IDS:
-            raise ValueError("Unknown dataset id specified")
-    else:
-        raise ValueError("Missing evaluation parameters")
-
-except:
-    raise ValueError("Bad evaluation parameters")
+# Parse arguments.
+args = parser.parse_args()
 
 # Set CV parameters.
 N_SPLITS = 5
@@ -57,12 +36,12 @@ N_REPEATS = 10
 RESAMPLING_METHOD = 'none'
 
 # List of models to evaluate.
-EVALUATE = args.methods
+EVALUATE = args.method
 
 #### (1) DATA PARSING AND PREPROCESSING ############
 
 # Specify dataset id.
-DATASET_ID = int(args.dataset[0])
+DATASET_ID = int(args.dataset)
 
 # Specify indices of features to deselect.
 DESELECT = []
@@ -138,6 +117,7 @@ def format_clf_report(clf_report, clf_name, class_names, dataset_id, save_path):
 
 #### (2) EVALUATE BASELINE RANDOM FOREST ##########
 
+
 # If evaluating RF model.
 if 'rf' in EVALUATE:
 
@@ -147,35 +127,49 @@ if 'rf' in EVALUATE:
     # If resampling method specified, integrate into pipeline.
     if RESAMPLING_METHOD != 'none':
         clf_rf = Pipeline([('resampler', resampling.get_resampler(RESAMPLING_METHOD)), ('clf', clf_rf)])
-    
-    # Initialize accumulator for fold results.
-    score_acc_rf = 0
+  
+    # If evaluating using cross-validation.
+    if args.eval_method == 'cv':
 
-    # Initilize array for accumulating classification scoring reports.
-    cr_rf = np.zeros((4, len(class_names)))
+        # Initialize accumulator for fold results.
+        score_acc_rf = 0
 
-    # Perform CV.
-    idx_it = 1
-    for train_idx, test_idx in RepeatedStratifiedKFold(n_splits=N_SPLITS, n_repeats=N_REPEATS).split(segments, seg_target):
-        segments_train = np.array([el.flatten() for el in segments[train_idx, :, :]])
-        segments_test = np.array([el.flatten() for el in segments[test_idx, :, :]])
-        seg_target_train = seg_target[train_idx]
-        seg_target_test = seg_target[test_idx]
-        clf_rf.fit(segments_train, seg_target_train)
-        pred_test = clf_rf.predict(segments_test)
-        score_acc_rf += accuracy_score(seg_target[test_idx], pred_test)
-        cr_rf = cr_rf + np.array(precision_recall_fscore_support(seg_target_test, pred_test, labels=list(np.arange(1,len(class_names)+1))))
-        print("RF - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
-        idx_it += 1
+        # Initilize array for accumulating classification scoring reports.
+        cr_rf = np.zeros((4, len(class_names)))
 
-    # Get mean fold score for RF model.
-    cv_score_rf = score_acc_rf / (N_SPLITS*N_REPEATS)
+        # Perform CV.
+        idx_it = 1
+        for train_idx, test_idx in RepeatedStratifiedKFold(n_splits=N_SPLITS, n_repeats=N_REPEATS).split(segments, seg_target):
+            segments_train = np.array([el.flatten() for el in segments[train_idx, :, :]])
+            segments_test = np.array([el.flatten() for el in segments[test_idx, :, :]])
+            seg_target_train = seg_target[train_idx]
+            seg_target_test = seg_target[test_idx]
+            clf_rf.fit(segments_train, seg_target_train)
+            pred_test = clf_rf.predict(segments_test)
+            score_acc_rf += accuracy_score(seg_target[test_idx], pred_test)
+            cr_rf = cr_rf + np.array(precision_recall_fscore_support(seg_target_test, pred_test, labels=list(np.arange(1,len(class_names)+1))))
+            print("RF - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
+            idx_it += 1
 
-    # Get mean classification report for RF model.
-    cv_cr_rf = cr_rf / (N_SPLITS*N_REPEATS)
+        # Get mean fold score for RF model.
+        cv_score_rf = score_acc_rf / (N_SPLITS*N_REPEATS)
 
-    # Write classification scoring report.
-    format_clf_report(cv_cr_rf, "Random Forest", class_names, DATASET_ID, CLF_REPORTS_PATH)
+        # Get mean classification report for RF model.
+        cv_cr_rf = cr_rf / (N_SPLITS*N_REPEATS)
+
+        # Write classification scoring report.
+        format_clf_report(cv_cr_rf, "Random Forest", class_names, DATASET_ID, CLF_REPORTS_PATH)
+
+    else:
+
+        # Split data into training and test sets.
+        data_train, data_test, target_train, target_test = train_test_split(np.array([el.flatten() for el in segments]), seg_target, random_state=0, 
+                stratify=seg_target)
+        
+        # Train model and evaluate on test set.
+        score = clf_rf.fit(data_train, target_train).score(data_test, target_test)
+        print("Finised evaluating RF model using a train-test split with score={0:.4f}.".format(score))
+
 
 ####################################################
 
@@ -197,34 +191,47 @@ if 'cnn' in EVALUATE:
     if RESAMPLING_METHOD != 'none':
         clf_cnn = Pipeline([('resampler', resampling.get_resampler(RESAMPLING_METHOD)), ('clf', clf_cnn)])
 
-    # Initialize accumulator for fold results.
-    scores_acc_cnn = 0
+    # If evaluating using cross-validation.
+    if args.eval_method == 'cv':
 
-    # Initilize array for accumulating classification scoring reports.
-    cr_cnn = np.zeros((4, len(class_names)))
+        # Initialize accumulator for fold results.
+        scores_acc_cnn = 0
 
-    # Perform CV.
-    idx_it = 1
-    for train_idx, test_idx in RepeatedStratifiedKFold(n_splits=N_SPLITS, n_repeats=N_REPEATS).split(segments, seg_target):
-        segments_train = segments[train_idx, :, :, np.newaxis] 
-        segments_test = segments[test_idx, :, :, np.newaxis] 
-        seg_target_encoded_train = seg_target_encoded[train_idx, :]
-        seg_target_encoded_test = seg_target_encoded[test_idx, :]
-        clf_cnn.fit(segments_train, seg_target_encoded_train)
-        pred_test = clf_cnn.predict(segments_test)
-        scores_acc_cnn += accuracy_score(seg_target[test_idx] - deselect_len, pred_test+1)
-        cr_cnn = cr_cnn + np.array(precision_recall_fscore_support(np.argmax(seg_target_encoded_test, axis=1), pred_test, labels=list(np.arange(len(class_names)))))
-        print("CNN - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
-        idx_it += 1
+        # Initilize array for accumulating classification scoring reports.
+        cr_cnn = np.zeros((4, len(class_names)))
 
-    # Get mean fold score for CNN model.
-    cv_score_cnn = scores_acc_cnn / (N_SPLITS*N_REPEATS)
+        # Perform CV.
+        idx_it = 1
+        for train_idx, test_idx in RepeatedStratifiedKFold(n_splits=N_SPLITS, n_repeats=N_REPEATS).split(segments, seg_target):
+            segments_train = segments[train_idx, :, :, np.newaxis] 
+            segments_test = segments[test_idx, :, :, np.newaxis] 
+            seg_target_encoded_train = seg_target_encoded[train_idx, :]
+            seg_target_encoded_test = seg_target_encoded[test_idx, :]
+            clf_cnn.fit(segments_train, seg_target_encoded_train)
+            pred_test = clf_cnn.predict(segments_test)
+            scores_acc_cnn += accuracy_score(seg_target[test_idx] - deselect_len, pred_test+1)
+            cr_cnn = cr_cnn + np.array(precision_recall_fscore_support(np.argmax(seg_target_encoded_test, axis=1), pred_test, labels=list(np.arange(len(class_names)))))
+            print("CNN - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
+            idx_it += 1
 
-    # Get mean classification report for CNN model.
-    cv_cr_cnn = cr_cnn / (N_SPLITS*N_REPEATS)
+        # Get mean fold score for CNN model.
+        cv_score_cnn = scores_acc_cnn / (N_SPLITS*N_REPEATS)
 
-    # Write classification scoring report.
-    format_clf_report(cv_cr_cnn, "CNN", class_names, DATASET_ID, CLF_REPORTS_PATH)
+        # Get mean classification report for CNN model.
+        cv_cr_cnn = cr_cnn / (N_SPLITS*N_REPEATS)
+
+        # Write classification scoring report.
+        format_clf_report(cv_cr_cnn, "CNN", class_names, DATASET_ID, CLF_REPORTS_PATH)
+
+    else:
+
+        # Split data into training and test sets.
+        data_train, data_test, target_train, target_test = train_test_split(segments, seg_target_encoded, random_state=0, 
+                stratify=np.argmax(seg_target_encoded, axis=1))
+        
+        # Train model and evaluate on test set.
+        score = clf_cnn.fit(data_train[:, :, :, np.newaxis], target_train).score(data_test, target_test)
+        print("Finised evaluating CNN model using a train-test split with score={0:.4f}.".format(score))
 
 ####################################################
 
@@ -246,34 +253,48 @@ if 'lstm' in EVALUATE:
     if RESAMPLING_METHOD != 'none':
         clf_lstm = Pipeline([('resampler', resampling.get_resampler(RESAMPLING_METHOD)), ('clf', clf_lstm)])
 
-    # Initialize accumulator for fold results.
-    scores_acc_lstm = 0
+    # If evaluating using cross-validation.
+    if args.eval_method == 'cv':
 
-    # Initilize array for accumulating classification scoring reports.
-    cr_lstm = np.zeros((4, len(class_names)))
+        # Initialize accumulator for fold results.
+        scores_acc_lstm = 0
 
-    # Perform CV.
-    idx_it = 1
-    for train_idx, test_idx in RepeatedStratifiedKFold(n_splits=N_SPLITS, n_repeats=N_REPEATS).split(segments, seg_target):
-        segments_train = segments[train_idx, :, :] 
-        segments_test = segments[test_idx, :, :] 
-        seg_target_encoded_train = seg_target_encoded[train_idx, :]
-        seg_target_encoded_test = seg_target_encoded[test_idx, :]
-        clf_lstm.fit(segments_train, seg_target_encoded_train)
-        pred_test = clf_lstm.predict(segments_test)
-        scores_acc_lstm += accuracy_score(seg_target[test_idx] - deselect_len, pred_test+1)
-        cr_lstm = cr_lstm + np.array(precision_recall_fscore_support(np.argmax(seg_target_encoded_test, axis=1), pred_test, labels=list(np.arange(len(class_names)))))
-        print("LSTM - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
-        idx_it += 1
-    
-    # Get mean fold score for LSTM model.
-    cv_score_lstm = scores_acc_lstm / (N_SPLITS*N_REPEATS)
+        # Initilize array for accumulating classification scoring reports.
+        cr_lstm = np.zeros((4, len(class_names)))
 
-    # Get mean classification report for LSTM model.
-    cv_cr_lstm = cr_lstm / (N_SPLITS*N_REPEATS)
+        # Perform CV.
+        idx_it = 1
+        for train_idx, test_idx in RepeatedStratifiedKFold(n_splits=N_SPLITS, n_repeats=N_REPEATS).split(segments, seg_target):
+            segments_train = segments[train_idx, :, :] 
+            segments_test = segments[test_idx, :, :] 
+            seg_target_encoded_train = seg_target_encoded[train_idx, :]
+            seg_target_encoded_test = seg_target_encoded[test_idx, :]
+            clf_lstm.fit(segments_train, seg_target_encoded_train)
+            pred_test = clf_lstm.predict(segments_test)
+            scores_acc_lstm += accuracy_score(seg_target[test_idx] - deselect_len, pred_test+1)
+            cr_lstm = cr_lstm + np.array(precision_recall_fscore_support(np.argmax(seg_target_encoded_test, axis=1), pred_test, labels=list(np.arange(len(class_names)))))
+            print("LSTM - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
+            idx_it += 1
+        
+        # Get mean fold score for LSTM model.
+        cv_score_lstm = scores_acc_lstm / (N_SPLITS*N_REPEATS)
 
-    # Write classification scoring report.
-    format_clf_report(cv_cr_lstm, "LSTM", class_names, DATASET_ID, CLF_REPORTS_PATH)
+        # Get mean classification report for LSTM model.
+        cv_cr_lstm = cr_lstm / (N_SPLITS*N_REPEATS)
+
+        # Write classification scoring report.
+        format_clf_report(cv_cr_lstm, "LSTM", class_names, DATASET_ID, CLF_REPORTS_PATH)
+
+    else:
+
+        # Split data into training and test sets.
+        data_train, data_test, target_train, target_test = train_test_split(segments, seg_target_encoded, random_state=0, 
+                stratify=np.argmax(seg_target_encoded, axis=1))
+        
+        # Train model and evaluate on test set.
+        score = clf_lstm.fit(data_train, target_train).score(data_test, target_test)
+        print("Finised evaluating LSTM model using a train-test split with score={0:.4f}.".format(score))
+
 
 ####################################################
 
@@ -294,65 +315,81 @@ if 'fe' in EVALUATE:
     # If resampling method specified, integrate into pipeline.
     if RESAMPLING_METHOD != 'none':
         clf_rf = Pipeline([('resampler', resampling.get_resampler(RESAMPLING_METHOD)), ('clf', clf_rf)])
-    
-    # Initialize accumulator for fold results.
-    score_acc_fe = 0
 
-    # Initilize array for accumulating classification scoring reports.
-    cr_fe = np.zeros((4, len(class_names)))
+    # If evaluating using cross-validation.
+    if args.eval_method == 'cv':
+        
+        # Initialize accumulator for fold results.
+        score_acc_fe = 0
 
-    # Perform CV.
-    idx_it = 1
-    for train_idx, test_idx in RepeatedStratifiedKFold(n_splits=N_SPLITS, n_repeats=N_REPEATS).split(data_fe, target_fe):
-        data_train = data_fe[train_idx, :]
-        data_test = data_fe[test_idx, :]
-        target_train = target_fe[train_idx]
-        target_test = target_fe[test_idx]
-        clf_rf.fit(data_train, target_train)
-        pred_test = clf_rf.predict(data_test)
-        score_acc_fe += accuracy_score(target_test, pred_test)
-        cr_fe = cr_fe + np.array(precision_recall_fscore_support(target_test, pred_test, labels=list(np.arange(1,len(class_names)+1))))
-        print("FE - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
-        idx_it += 1
+        # Initilize array for accumulating classification scoring reports.
+        cr_fe = np.zeros((4, len(class_names)))
 
-    # Get mean fold score for RF model.
-    cv_score_fe = score_acc_fe / (N_SPLITS*N_REPEATS)
+        # Perform CV.
+        idx_it = 1
+        for train_idx, test_idx in RepeatedStratifiedKFold(n_splits=N_SPLITS, n_repeats=N_REPEATS).split(data_fe, target_fe):
+            data_train = data_fe[train_idx, :]
+            data_test = data_fe[test_idx, :]
+            target_train = target_fe[train_idx]
+            target_test = target_fe[test_idx]
+            clf_rf.fit(data_train, target_train)
+            pred_test = clf_rf.predict(data_test)
+            score_acc_fe += accuracy_score(target_test, pred_test)
+            cr_fe = cr_fe + np.array(precision_recall_fscore_support(target_test, pred_test, labels=list(np.arange(1,len(class_names)+1))))
+            print("FE - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
+            idx_it += 1
 
-    # Get mean classification report for feature engineering method.
-    cv_cr_fe = cr_fe / (N_SPLITS*N_REPEATS)
+        # Get mean fold score for RF model.
+        cv_score_fe = score_acc_fe / (N_SPLITS*N_REPEATS)
 
-    # Write classification scoring report.
-    format_clf_report(cv_cr_fe, "Feature Engineering", class_names, DATASET_ID, CLF_REPORTS_PATH)
+        # Get mean classification report for feature engineering method.
+        cv_cr_fe = cr_fe / (N_SPLITS*N_REPEATS)
+
+        # Write classification scoring report.
+        format_clf_report(cv_cr_fe, "Feature Engineering", class_names, DATASET_ID, CLF_REPORTS_PATH)
+
+    else:
+
+        # Split data into training and test sets.
+        data_train, data_test, target_train, target_test = train_test_split(data_fe, target_fe, random_state=0, 
+                stratify=target_fe)
+        
+        # Train model and evaluate on test set.
+        score = clf_rf.fit(data_train, target_train).score(data_test, target_test)
+        print("Finised evaluating FE+RF model using a train-test split with score={0:.4f}.".format(score))
+
 
 ####################################################
 
 
 #### SAVE RESULTS TO FILE ##########################
 
-# Set path to results file.
-RESULTS_PATH = './results/results.txt'
+if args.eval_method == 'cv':
 
-# Open results file and append results.
-with open(RESULTS_PATH, 'a') as f:
-    if os.path.isfile(RESULTS_PATH) and os.path.getsize(RESULTS_PATH) > 0:
+    # Set path to results file.
+    RESULTS_PATH = './results/results.txt'
+
+    # Open results file and append results.
+    with open(RESULTS_PATH, 'a') as f:
+        if os.path.isfile(RESULTS_PATH) and os.path.getsize(RESULTS_PATH) > 0:
+            f.write('\n')
+
+        f.write('Date: {0}\n'.format(datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")))
+        f.write('Window size: {0}\n'.format(data['window_size']))
+        f.write('Overlap: {0}\n'.format(data['overlap']))
+        f.write('Deselected: {0}\n'.format(data['deselect']))
+        f.write('Dataset: {0}\n'.format(DATASET_ID))
         f.write('\n')
-
-    f.write('Date: {0}\n'.format(datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")))
-    f.write('Window size: {0}\n'.format(data['window_size']))
-    f.write('Overlap: {0}\n'.format(data['overlap']))
-    f.write('Deselected: {0}\n'.format(data['deselect']))
-    f.write('Dataset: {0}\n'.format(DATASET_ID))
-    f.write('\n')
-    f.write('Model | CV Score\n')
-    f.write('----------------\n')
-    if 'rf' in EVALUATE:
-        f.write('RF    | {0:.4f}\n'.format(cv_score_rf))
-    if 'cnn' in EVALUATE:
-        f.write('CNN   | {0:.4f}\n'.format(cv_score_cnn))
-    if 'lstm' in EVALUATE:
-        f.write('LSTM  | {0:.4f}\n'.format(cv_score_lstm))
-    if 'fe' in EVALUATE:
-        f.write('FE  | {0:.4f}\n'.format(cv_score_fe))
+        f.write('Model | CV Score\n')
+        f.write('----------------\n')
+        if 'rf' in EVALUATE:
+            f.write('RF    | {0:.4f}\n'.format(cv_score_rf))
+        if 'cnn' in EVALUATE:
+            f.write('CNN   | {0:.4f}\n'.format(cv_score_cnn))
+        if 'lstm' in EVALUATE:
+            f.write('LSTM  | {0:.4f}\n'.format(cv_score_lstm))
+        if 'fe' in EVALUATE:
+            f.write('FE  | {0:.4f}\n'.format(cv_score_fe))
 
 ####################################################
 
