@@ -1,5 +1,5 @@
 from keras.models import Sequential
-from keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropout, CuDNNLSTM
+from keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropout, LSTM #CuDNNLSTM
 from keras import optimizers
 
 from sklearn.ensemble import RandomForestClassifier
@@ -68,9 +68,13 @@ def get_lstm_model(n_rows, n_cols, num_classes, dropout_ratio=0.2, num_neurons_l
     model = Sequential()
 
     # Set model topology.
-    model.add(CuDNNLSTM(num_neurons_lstm1, input_shape = (n_rows, n_cols), return_sequences = True))
+    # model.add(CuDNNLSTM(num_neurons_lstm1, input_shape = (n_rows, n_cols), return_sequences = True))
+    model.add(LSTM(num_neurons_lstm1, input_shape = (n_rows, n_cols), return_sequences = True))
     model.add(Dropout(dropout_ratio))
-    model.add(CuDNNLSTM(num_neurons_lstm2)) 
+    model.add(LSTM(num_neurons_lstm2)) 
+    # model.add(CuDNNLSTM(num_neurons_lstm2)) 
+
+
     model.add(Dense(num_classes, activation = 'sigmoid'))
     model.compile(loss = 'binary_crossentropy', optimizer = 'rmsprop', metrics = ['accuracy'])
     return model

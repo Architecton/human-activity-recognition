@@ -297,7 +297,7 @@ if 'lstm' in EVALUATE:
                 stratify=np.argmax(seg_target_encoded, axis=1))
         
         # Train model and evaluate on test set.
-        score = clf_lstm.fit(data_train, target_train).score(data_test, target_test)
+        score = clf_lstm.fit(data_train, target_train).score(data_test, np.argmax(target_test, axis=1))
         print("Finised evaluating LSTM model using a train-test split with score={0:.4f}.".format(score))
 
 
