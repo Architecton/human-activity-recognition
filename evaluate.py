@@ -29,7 +29,7 @@ parser.add_argument('--dataset', type=int, metavar='DATASET', default=1,
 args = parser.parse_args()
 
 # Set CV parameters.
-N_SPLITS = 5
+N_SPLITS = 10
 N_REPEATS = 1
 
 # Set resampling method ('none' means no resampling).
@@ -53,7 +53,7 @@ with open('./datasets/data' + str(DATASET_ID) + '/fs.txt', 'r') as f:
 # Set number of seconds in each window and calculate window size.
 NUM_SECONDS_WINDOW = 3
 WINDOW_SIZE = sampling_frequency*NUM_SECONDS_WINDOW
-SHUFFLE = False
+SHUFFLE = True
 
 # Get preprocessed data.
 data = data_preprocessing.get_preprocessed_dataset(dataset_id=DATASET_ID, window_size=WINDOW_SIZE, overlap=0.3, deselect=DESELECT, shuffle=SHUFFLE)

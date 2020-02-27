@@ -160,7 +160,7 @@ def get_preprocessed_dataset(dataset_id=1, window_size=-1.0, overlap=-1.0, desel
 
         # If shuffling segments.
         if shuffle:
-            segments, seg_target = sklearn.utils.shuffle(segments, seg_target)
+            segments, seg_target = sklearn.utils.shuffle(segments, seg_target, random_state=0)
 
         # encode target values using one-hot-encoding.
         seg_target_encoded = encode_target(seg_target)
