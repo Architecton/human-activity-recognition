@@ -30,7 +30,7 @@ args = parser.parse_args()
 
 # Set CV parameters.
 N_SPLITS = 5
-N_REPEATS = 10
+N_REPEATS = 1
 
 # Set resampling method ('none' means no resampling).
 RESAMPLING_METHOD = 'none'
@@ -41,7 +41,7 @@ EVALUATE = args.method
 #### (1) DATA PARSING AND PREPROCESSING ############
 
 # Specify dataset id.
-DATASET_ID = int(args.dataset)
+DATASET_ID = args.dataset
 
 # Specify indices of features to deselect.
 DESELECT = []
@@ -53,14 +53,19 @@ with open('./datasets/data' + str(DATASET_ID) + '/fs.txt', 'r') as f:
 # Set number of seconds in each window and calculate window size.
 NUM_SECONDS_WINDOW = 3
 WINDOW_SIZE = sampling_frequency*NUM_SECONDS_WINDOW
+SHUFFLE = False
 
 # Get preprocessed data.
-data = data_preprocessing.get_preprocessed_dataset(dataset_id=DATASET_ID, window_size=WINDOW_SIZE, overlap=0.5, deselect=DESELECT)
+data = data_preprocessing.get_preprocessed_dataset(dataset_id=DATASET_ID, window_size=WINDOW_SIZE, overlap=0.3, deselect=DESELECT, shuffle=SHUFFLE)
 segments = data['segments']
 seg_target = data['seg_target']
 seg_target_encoded = data['seg_target_encoded'] 
 deselect_len = len(data['deselect'])
 class_names = data['class_names']
+
+# Save segments and target values (for sharing)
+np.save('./data-share/segments_' + str(DATASET_ID) + '.npy', segments)
+np.save('./data-share/class_' + str(DATASET_ID) + '.npy', seg_target)
 
 ####################################################
 
@@ -230,7 +235,7 @@ if 'cnn' in EVALUATE:
                 stratify=np.argmax(seg_target_encoded, axis=1))
         
         # Train model and evaluate on test set.
-        score = clf_cnn.fit(data_train[:, :, :, np.newaxis], target_train).score(data_test, target_test)
+        score = clf_cnn.fit(data_train[:, :, :, np.newaxis], target_train).score(data_test[:, :, :, np.newaxis], np.argmax(target_test, axis=1))
         print("Finised evaluating CNN model using a train-test split with score={0:.4f}.".format(score))
 
 ####################################################

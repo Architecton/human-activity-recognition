@@ -6,3 +6,13 @@ Dataset: 1
 
 Model | CV Score
 ----------------
+
+Date: 25/02/2020 17:51:05
+Window size: 150
+Overlap: 0.3
+Deselected: []
+Dataset: 1
+
+Model | CV Score
+----------------
+RF    | 0.9251

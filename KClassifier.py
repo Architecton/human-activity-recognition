@@ -1,3 +1,4 @@
+from sklearn.metrics import accuracy_score
 
 class KClassifier():
     """Wrapper for Keras model implementing the methods necessary
@@ -51,4 +52,19 @@ class KClassifier():
 
         return self.model.predict_classes(data)
 
+    def score(self, data, target):
+        """Return the mean accuracy on the given test data and labels.
+
+        Author: Jernej Vivod (vivod.jernej@gmail.com)
+
+        Args:
+            data (numpy.ndarray): data samples
+            target (numpy.ndarray): data labels (target variable values)
+
+        Returns:
+            (numpy.ndarray): class predictions for data samples. 
+
+        """
+
+        return accuracy_score(self.model.predict_classes(data), target)
 

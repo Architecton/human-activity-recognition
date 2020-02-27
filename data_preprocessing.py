@@ -4,9 +4,9 @@ from scipy import stats
 import scipy.io as sio
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import StandardScaler
+import sklearn.utils
 
 import data_parsing
-
 
 def segment_data(data, target, window_size, overlap):
     """Segment data into overlaping windows.
@@ -75,7 +75,7 @@ def encode_target(target):
     return enc.fit_transform(target.reshape(target.size, 1))
 
 
-def get_preprocessed_dataset(dataset_id=1, window_size=-1.0, overlap=-1.0, deselect=[]):
+def get_preprocessed_dataset(dataset_id=1, window_size=-1.0, overlap=-1.0, deselect=[], shuffle=True):
     """Get dictionary containing data formatted for model evaluation,
 
     Author: Jernej Vivod (vivod.jernej@gmail.com)
@@ -106,6 +106,7 @@ def get_preprocessed_dataset(dataset_id=1, window_size=-1.0, overlap=-1.0, desel
         # Check if requested window size and overlap match that of cached data.
         if (loaded_data['window_size'][0] == window_size and 
                     loaded_data['overlap'][0] == overlap and 
+                    loaded_data['shuffle'][0] == shuffle and
                     np.all(loaded_data['deselect'] == np.array(deselect)) or
                     window_size == -1.0 and 
                     overlap == -1.0 and 
@@ -119,6 +120,7 @@ def get_preprocessed_dataset(dataset_id=1, window_size=-1.0, overlap=-1.0, desel
             class_names = np.ravel(loaded_data['class_names'])
             overlap = loaded_data['overlap'][0][0]
             window_size = loaded_data['window_size'][0][0]
+            shuffle = loaded_data['shuffle'][0]
         else:
             parse = True
     else:
@@ -156,6 +158,10 @@ def get_preprocessed_dataset(dataset_id=1, window_size=-1.0, overlap=-1.0, desel
         OVERLAP = overlap
         segments, seg_target = segment_data(data_normalized, target, WINDOW_SIZE, OVERLAP)
 
+        # If shuffling segments.
+        if shuffle:
+            segments, seg_target = sklearn.utils.shuffle(segments, seg_target)
+
         # encode target values using one-hot-encoding.
         seg_target_encoded = encode_target(seg_target)
 
@@ -168,6 +174,7 @@ def get_preprocessed_dataset(dataset_id=1, window_size=-1.0, overlap=-1.0, desel
             'overlap' : overlap,
             'deselect' : deselect,
             'class_names' : class_names,
+            'shuffle' : shuffle
             })
 
     # Return dictionary of preprocessed data.
@@ -179,5 +186,6 @@ def get_preprocessed_dataset(dataset_id=1, window_size=-1.0, overlap=-1.0, desel
             'overlap' : overlap,
             'deselect' : deselect,
             'class_names' : class_names, 
+            'shuffle' : shuffle
             }
 
