@@ -66,8 +66,5 @@ class KClassifier():
 
         """
 
-        import pdb
-        pdb.set_trace()
-
         return accuracy_score(self.model.predict_classes(data), target)
 
