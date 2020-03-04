@@ -30,7 +30,7 @@ args = parser.parse_args()
 
 # Set CV parameters.
 N_SPLITS = 10
-N_REPEATS = 1
+N_REPEATS = 5
 
 # Set resampling method ('none' means no resampling).
 RESAMPLING_METHOD = 'none'
