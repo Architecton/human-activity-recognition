@@ -168,8 +168,8 @@ if 'rf' in EVALUATE:
     else:
 
         # Split data into training and test sets.
-        data_train, data_test, target_train, target_test = train_test_split(np.array([el.flatten() for el in segments]), seg_target, random_state=0, 
-                stratify=seg_target)
+        data_train, data_test, target_train, target_test = train_test_split(np.array([el.flatten() for el in segments]), seg_target, 
+                random_state=0, stratify=seg_target, test_size=0.2)
 
         # Train model and evaluate on test set.
         score = clf_rf.fit(data_train, target_train).score(data_test, target_test)
@@ -232,7 +232,7 @@ if 'cnn' in EVALUATE:
 
         # Split data into training and test sets.
         data_train, data_test, target_train, target_test = train_test_split(segments, seg_target_encoded, random_state=0, 
-                stratify=np.argmax(seg_target_encoded, axis=1))
+                stratify=np.argmax(seg_target_encoded, axis=1), test_size=0.2)
 
         # Train model and evaluate on test set.
         score = clf_cnn.fit(data_train[:, :, :, np.newaxis], target_train).score(data_test[:, :, :, np.newaxis], np.argmax(target_test, axis=1))
@@ -294,7 +294,7 @@ if 'lstm' in EVALUATE:
 
         # Split data into training and test sets.
         data_train, data_test, target_train, target_test = train_test_split(segments, seg_target_encoded, random_state=0, 
-                stratify=np.argmax(seg_target_encoded, axis=1))
+                stratify=np.argmax(seg_target_encoded, axis=1), test_size=0.2)
         
         # Train model and evaluate on test set.
         score = clf_lstm.fit(data_train, target_train).score(data_test, np.argmax(target_test, axis=1))
@@ -357,7 +357,7 @@ if 'fe' in EVALUATE:
 
         # Split data into training and test sets.
         data_train, data_test, target_train, target_test = train_test_split(data_fe, target_fe, random_state=0, 
-                stratify=target_fe)
+                stratify=target_fe, test_size=0.2)
         
         # Train model and evaluate on test set.
         score = clf_rf.fit(data_train, target_train).score(data_test, target_test)
