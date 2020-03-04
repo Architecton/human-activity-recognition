@@ -170,7 +170,7 @@ if 'rf' in EVALUATE:
         # Split data into training and test sets.
         data_train, data_test, target_train, target_test = train_test_split(np.array([el.flatten() for el in segments]), seg_target, random_state=0, 
                 stratify=seg_target)
-        
+
         # Train model and evaluate on test set.
         score = clf_rf.fit(data_train, target_train).score(data_test, target_test)
         print("Finised evaluating RF model using a train-test split with score={0:.4f}.".format(score))
@@ -233,7 +233,7 @@ if 'cnn' in EVALUATE:
         # Split data into training and test sets.
         data_train, data_test, target_train, target_test = train_test_split(segments, seg_target_encoded, random_state=0, 
                 stratify=np.argmax(seg_target_encoded, axis=1))
-        
+
         # Train model and evaluate on test set.
         score = clf_cnn.fit(data_train[:, :, :, np.newaxis], target_train).score(data_test[:, :, :, np.newaxis], np.argmax(target_test, axis=1))
         print("Finised evaluating CNN model using a train-test split with score={0:.4f}.".format(score))
