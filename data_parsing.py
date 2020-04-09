@@ -74,8 +74,8 @@ def parse_acc_data(data_folder_path, dataset_num):
             data_final = data[~unlabeled_msk, :].astype(np.float)
             yield data_final, target_final
     elif dataset_num == 2 or dataset_num == 3:
-        # Go over .csv files in data folder.
-        for f in glob.glob(data_folder_path + '*.csv'):
+        # Go over .xlsx files in data folder.
+        for f in glob.glob(data_folder_path + '*.xlsx'):
             data_raw = parse_csv_file(f)
             data = data_raw[:, :-1]
             target = data_raw[:, -1]

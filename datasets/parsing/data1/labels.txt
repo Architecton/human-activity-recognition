@@ -1,0 +1,9 @@
+standing
+Sitting
+walking
+stand-to-walk
+stand-to-sit
+sit-to-stand
+walk-to-stand
+sit-to-walk
+walk-to-sit
