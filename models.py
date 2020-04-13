@@ -1,5 +1,5 @@
 from keras.models import Sequential
-from keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropout,CuDNNLSTM
+from keras.layers import Dense, Conv2D, MaxPooling2D, Flatten, Dropout, CuDNNLSTM
 from keras import optimizers
 
 from sklearn.ensemble import RandomForestClassifier
