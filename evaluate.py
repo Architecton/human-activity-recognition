@@ -24,6 +24,9 @@ parser.add_argument('--eval-method', type=str, metavar='EVAL_METHOD', default='c
         choices=['tts', 'cv'], help='evaluation method (tts or cv)')
 parser.add_argument('--dataset', type=int, metavar='DATASET', default=1, 
         choices=[1, 2, 3], help='dataset id (1, 2 or 3)')
+parser.add_argument('--shuffle', action='store_true')
+parser.add_argument('--overlap', type=float, metavar='OVERLAP', default=0.3)
+parser.add_argument('--window-len', type=float, metavar='WINDOW-LEN', default=3)
 
 # Parse arguments.
 args = parser.parse_args()
@@ -51,12 +54,12 @@ with open('./datasets/data' + str(DATASET_ID) + '/fs.txt', 'r') as f:
     sampling_frequency = int(f.readline().strip())
 
 # Set number of seconds in each window and calculate window size.
-NUM_SECONDS_WINDOW = 3
+NUM_SECONDS_WINDOW = args.window_len
 WINDOW_SIZE = sampling_frequency*NUM_SECONDS_WINDOW
-SHUFFLE = True
+SHUFFLE = args.shuffle
 
 # Get preprocessed data.
-data = data_preprocessing.get_preprocessed_dataset(dataset_id=DATASET_ID, window_size=WINDOW_SIZE, overlap=0.3, deselect=DESELECT, shuffle=SHUFFLE)
+data = data_preprocessing.get_preprocessed_dataset(dataset_id=DATASET_ID, window_size=WINDOW_SIZE, overlap=args.overlap, deselect=DESELECT, shuffle=SHUFFLE)
 segments = data['segments']
 seg_target = data['seg_target']
 seg_target_encoded = data['seg_target_encoded'] 
@@ -152,9 +155,6 @@ if 'rf' in EVALUATE:
             print("RF - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
             idx_it += 1
 
-        # Get mean fold score for RF model.
-        cv_score_rf = score_acc_rf / (N_SPLITS*N_REPEATS)
-
         # Get mean classification report for RF model.
         cv_cr_rf = cr_rf / (N_SPLITS*N_REPEATS)
 
@@ -221,9 +221,6 @@ if 'cnn' in EVALUATE:
             # Reset CNN weights to initial state.
             clf_cnn.set_weights(initial_weights)
 
-        # Get mean fold score for CNN model.
-        cv_score_cnn = scores_acc_cnn / (N_SPLITS*N_REPEATS)
-
         # Get mean classification report for CNN model.
         cv_cr_cnn = cr_cnn / (N_SPLITS*N_REPEATS)
 
@@ -289,9 +286,6 @@ if 'lstm' in EVALUATE:
             # Reset LSTM weights to initial state.
             clf_lstm.set_weights(initial_weights)
         
-        # Get mean fold score for LSTM model.
-        cv_score_lstm = scores_acc_lstm / (N_SPLITS*N_REPEATS)
-
         # Get mean classification report for LSTM model.
         cv_cr_lstm = cr_lstm / (N_SPLITS*N_REPEATS)
 
@@ -352,9 +346,6 @@ if 'fe' in EVALUATE:
             print("FE - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
             idx_it += 1
 
-        # Get mean fold score for RF model.
-        cv_score_fe = score_acc_fe / (N_SPLITS*N_REPEATS)
-
         # Get mean classification report for feature engineering method.
         cv_cr_fe = cr_fe / (N_SPLITS*N_REPEATS)
 
@@ -396,13 +387,13 @@ if args.eval_method == 'cv':
         f.write('Model | CV Score\n')
         f.write('----------------\n')
         if 'rf' in EVALUATE:
-            f.write('RF    | {0:.4f}\n'.format(cv_score_rf))
+            f.write('RF    | {0:.4f}\n'.format(cv_score_rf/(N_SPLITS*N_REPEATS), np.std(cv_score_rf)))
         if 'cnn' in EVALUATE:
-            f.write('CNN   | {0:.4f}\n'.format(cv_score_cnn))
+            f.write('CNN   | {0:.4f} +- {1:.4f}\n'.format(cv_score_cnn/(N_SPLITS*N_REPEATS), np.std(cv_score_cnn)))
         if 'lstm' in EVALUATE:
-            f.write('LSTM  | {0:.4f}\n'.format(cv_score_lstm))
+            f.write('LSTM  | {0:.4f}\n'.format(cv_score_lstm/(N_SPLITS*N_REPEATS), np.std(cv_score_lstm)))
         if 'fe' in EVALUATE:
-            f.write('FE  | {0:.4f}\n'.format(cv_score_fe))
+            f.write('FE  | {0:.4f}\n'.format(cv_score_fe/(N_SPLITS*N_REPEATS), np.std(cv_score_fe)))
 
 ####################################################
 
