@@ -63,10 +63,6 @@ seg_target_encoded = data['seg_target_encoded']
 deselect_len = len(data['deselect'])
 class_names = data['class_names']
 
-# Save segments and target values (for sharing)
-np.save('./data-share/segments_' + str(DATASET_ID) + '.npy', segments)
-np.save('./data-share/class_' + str(DATASET_ID) + '.npy', seg_target)
-
 ####################################################
 
 # Set path for classification reports file.

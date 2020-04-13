@@ -8,6 +8,7 @@ import sklearn.utils
 
 import data_parsing
 
+
 def segment_data(data, target, window_size, overlap):
     """Segment data into overlaping windows.
 
