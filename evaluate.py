@@ -188,6 +188,9 @@ if 'cnn' in EVALUATE:
     model_cnn = models.get_cnn_model(**model_params.get_params('cnn', n_rows=segments[0].shape[0], n_cols=segments[0].shape[1], num_classes=np.unique(seg_target).size))
     clf_cnn = KClassifier(model_cnn, EPOCHS_CNN, BATCH_SIZE_CNN)
 
+    # Store initial weights for reinitializations.
+    initial_weights = clf_cnn.get_weights()
+
     # If resampling method specified, integrate into pipeline.
     if RESAMPLING_METHOD != 'none':
         clf_cnn = Pipeline([('resampler', resampling.get_resampler(RESAMPLING_METHOD)), ('clf', clf_cnn)])
@@ -214,6 +217,9 @@ if 'cnn' in EVALUATE:
             cr_cnn = cr_cnn + np.array(precision_recall_fscore_support(np.argmax(seg_target_encoded_test, axis=1), pred_test, labels=list(np.arange(len(class_names)))))
             print("CNN - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
             idx_it += 1
+
+            # Reset CNN weights to initial state.
+            clf_cnn.set_weights(initial_weights)
 
         # Get mean fold score for CNN model.
         cv_score_cnn = scores_acc_cnn / (N_SPLITS*N_REPEATS)
@@ -249,6 +255,9 @@ if 'lstm' in EVALUATE:
     # Initialize LSTM model with specified parameters.
     model_lstm = models.get_lstm_model(**model_params.get_params('lstm', n_rows=segments[0].shape[0], n_cols=segments[0].shape[1], num_classes=np.unique(seg_target).size))
     clf_lstm = KClassifier(model_lstm, EPOCHS_LSTM, BATCH_SIZE_LSTM, False)
+    
+    # Store initial weights for reinitializations.
+    initial_weights = clf_lstm.get_weights()
 
     # If resampling method specified, integrate into pipeline.
     if RESAMPLING_METHOD != 'none':
@@ -276,6 +285,9 @@ if 'lstm' in EVALUATE:
             cr_lstm = cr_lstm + np.array(precision_recall_fscore_support(np.argmax(seg_target_encoded_test, axis=1), pred_test, labels=list(np.arange(len(class_names)))))
             print("LSTM - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
             idx_it += 1
+            
+            # Reset LSTM weights to initial state.
+            clf_lstm.set_weights(initial_weights)
         
         # Get mean fold score for LSTM model.
         cv_score_lstm = scores_acc_lstm / (N_SPLITS*N_REPEATS)

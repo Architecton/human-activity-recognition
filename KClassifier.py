@@ -52,6 +52,7 @@ class KClassifier():
 
         return self.model.predict_classes(data)
 
+
     def score(self, data, target):
         """Return the mean accuracy on the given test data and labels.
 
@@ -68,3 +69,24 @@ class KClassifier():
 
         return accuracy_score(self.model.predict_classes(data), target)
 
+    
+    def get_weights(self):
+        """Return model's weights.
+
+        Returns:
+            (list): List of model's weights.
+        """
+        return self.model.get_weights()
+
+    
+    def set_weights(self, weights):
+        """Set model's weights
+
+        Author: Jernej Vivod (vivod.jernej@gmail.com)
+        
+        Args:
+            weights (list): List of model's weights.
+        
+        """
+        self.model.set_weights(weights)
+        
