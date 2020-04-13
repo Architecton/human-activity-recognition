@@ -387,13 +387,13 @@ if args.eval_method == 'cv':
         f.write('Model | CV Score\n')
         f.write('----------------\n')
         if 'rf' in EVALUATE:
-            f.write('RF    | {0:.4f}\n'.format(cv_score_rf/(N_SPLITS*N_REPEATS), np.std(cv_score_rf)))
+            f.write('RF    | {0:.4f} +- {1:.4f}\n'.format(cv_score_rf/(N_SPLITS*N_REPEATS), np.std(cv_score_rf)))
         if 'cnn' in EVALUATE:
             f.write('CNN   | {0:.4f} +- {1:.4f}\n'.format(cv_score_cnn/(N_SPLITS*N_REPEATS), np.std(cv_score_cnn)))
         if 'lstm' in EVALUATE:
-            f.write('LSTM  | {0:.4f}\n'.format(cv_score_lstm/(N_SPLITS*N_REPEATS), np.std(cv_score_lstm)))
+            f.write('LSTM  | {0:.4f} +- {1:.4f}\n'.format(cv_score_lstm/(N_SPLITS*N_REPEATS), np.std(cv_score_lstm)))
         if 'fe' in EVALUATE:
-            f.write('FE  | {0:.4f}\n'.format(cv_score_fe/(N_SPLITS*N_REPEATS), np.std(cv_score_fe)))
+            f.write('FE  | {0:.4f} +- {1:.4f}\n'.format(cv_score_fe/(N_SPLITS*N_REPEATS), np.std(cv_score_fe)))
 
 ####################################################
 
