@@ -32,8 +32,8 @@ parser.add_argument('--window-len', type=int, metavar='WINDOW-LEN', default=3)
 args = parser.parse_args()
 
 # Set CV parameters.
-N_SPLITS = 10
-N_REPEATS = 5
+N_SPLITS = 5
+N_REPEATS = 1
 
 # Set resampling method ('none' means no resampling).
 RESAMPLING_METHOD = 'none'
