@@ -26,7 +26,7 @@ parser.add_argument('--dataset', type=int, metavar='DATASET', default=1,
         choices=[1, 2, 3], help='dataset id (1, 2 or 3)')
 parser.add_argument('--shuffle', action='store_true')
 parser.add_argument('--overlap', type=float, metavar='OVERLAP', default=0.3)
-parser.add_argument('--window-len', type=float, metavar='WINDOW-LEN', default=3)
+parser.add_argument('--window-len', type=int, metavar='WINDOW-LEN', default=3)
 
 # Parse arguments.
 args = parser.parse_args()
