@@ -136,7 +136,7 @@ if 'rf' in EVALUATE:
     if args.eval_method == 'cv':
 
         # Initialize accumulator for fold results.
-        score_acc_rf = 0
+        cv_scores_rf = []
 
         # Initilize array for accumulating classification scoring reports.
         cr_rf = np.zeros((4, len(class_names)))
@@ -150,7 +150,7 @@ if 'rf' in EVALUATE:
             seg_target_test = seg_target[test_idx]
             clf_rf.fit(segments_train, seg_target_train)
             pred_test = clf_rf.predict(segments_test)
-            score_acc_rf += accuracy_score(seg_target[test_idx], pred_test)
+            cv_scores_rf.append(accuracy_score(seg_target[test_idx], pred_test))
             cr_rf = cr_rf + np.array(precision_recall_fscore_support(seg_target_test, pred_test, labels=list(np.arange(1,len(class_names)+1))))
             print("RF - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
             idx_it += 1
@@ -199,7 +199,7 @@ if 'cnn' in EVALUATE:
     if args.eval_method == 'cv':
 
         # Initialize accumulator for fold results.
-        scores_acc_cnn = 0
+        cv_scores_cnn = []
 
         # Initilize array for accumulating classification scoring reports.
         cr_cnn = np.zeros((4, len(class_names)))
@@ -213,7 +213,7 @@ if 'cnn' in EVALUATE:
             seg_target_encoded_test = seg_target_encoded[test_idx, :]
             clf_cnn.fit(segments_train, seg_target_encoded_train)
             pred_test = clf_cnn.predict(segments_test)
-            scores_acc_cnn += accuracy_score(seg_target[test_idx] - deselect_len, pred_test+1)
+            cv_scores_cnn.append(accuracy_score(seg_target[test_idx] - deselect_len, pred_test+1))
             cr_cnn = cr_cnn + np.array(precision_recall_fscore_support(np.argmax(seg_target_encoded_test, axis=1), pred_test, labels=list(np.arange(len(class_names)))))
             print("CNN - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
             idx_it += 1
@@ -264,7 +264,7 @@ if 'lstm' in EVALUATE:
     if args.eval_method == 'cv':
 
         # Initialize accumulator for fold results.
-        scores_acc_lstm = 0
+        cv_scores_lstm = []
 
         # Initilize array for accumulating classification scoring reports.
         cr_lstm = np.zeros((4, len(class_names)))
@@ -278,7 +278,7 @@ if 'lstm' in EVALUATE:
             seg_target_encoded_test = seg_target_encoded[test_idx, :]
             clf_lstm.fit(segments_train, seg_target_encoded_train)
             pred_test = clf_lstm.predict(segments_test)
-            scores_acc_lstm += accuracy_score(seg_target[test_idx] - deselect_len, pred_test+1)
+            cv_scores_lstm.append(accuracy_score(seg_target[test_idx] - deselect_len, pred_test+1))
             cr_lstm = cr_lstm + np.array(precision_recall_fscore_support(np.argmax(seg_target_encoded_test, axis=1), pred_test, labels=list(np.arange(len(class_names)))))
             print("LSTM - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
             idx_it += 1
@@ -327,7 +327,7 @@ if 'fe' in EVALUATE:
     if args.eval_method == 'cv':
         
         # Initialize accumulator for fold results.
-        score_acc_fe = 0
+        cv_scores_fe = []
 
         # Initilize array for accumulating classification scoring reports.
         cr_fe = np.zeros((4, len(class_names)))
@@ -341,7 +341,7 @@ if 'fe' in EVALUATE:
             target_test = target_fe[test_idx]
             clf_rf.fit(data_train, target_train)
             pred_test = clf_rf.predict(data_test)
-            score_acc_fe += accuracy_score(target_test, pred_test)
+            cv_scores_fe.append(accuracy_score(target_test, pred_test))
             cr_fe = cr_fe + np.array(precision_recall_fscore_support(target_test, pred_test, labels=list(np.arange(1,len(class_names)+1))))
             print("FE - finished {0}/{1}".format(idx_it, N_SPLITS*N_REPEATS))
             idx_it += 1
@@ -387,13 +387,13 @@ if args.eval_method == 'cv':
         f.write('Model | CV Score\n')
         f.write('----------------\n')
         if 'rf' in EVALUATE:
-            f.write('RF    | {0:.4f} +- {1:.4f}\n'.format(cv_score_rf/(N_SPLITS*N_REPEATS), np.std(cv_score_rf)))
+            f.write('RF    | {0:.4f} +- {1:.4f}\n'.format(np.sum(cv_scores_rf)/(N_SPLITS*N_REPEATS), np.std(cv_scores_rf)))
         if 'cnn' in EVALUATE:
-            f.write('CNN   | {0:.4f} +- {1:.4f}\n'.format(cv_score_cnn/(N_SPLITS*N_REPEATS), np.std(cv_score_cnn)))
+            f.write('CNN   | {0:.4f} +- {1:.4f}\n'.format(np.sum(cv_scores_cnn)/(N_SPLITS*N_REPEATS), np.std(cv_scores_cnn)))
         if 'lstm' in EVALUATE:
-            f.write('LSTM  | {0:.4f} +- {1:.4f}\n'.format(cv_score_lstm/(N_SPLITS*N_REPEATS), np.std(cv_score_lstm)))
+            f.write('LSTM  | {0:.4f} +- {1:.4f}\n'.format(np.sum(cv_scores_lstm)/(N_SPLITS*N_REPEATS), np.std(cv_scores_lstm)))
         if 'fe' in EVALUATE:
-            f.write('FE  | {0:.4f} +- {1:.4f}\n'.format(cv_score_fe/(N_SPLITS*N_REPEATS), np.std(cv_score_fe)))
+            f.write('FE  | {0:.4f} +- {1:.4f}\n'.format(np.sum(cv_scores_fe)/(N_SPLITS*N_REPEATS), np.std(cv_scores_fe)))
 
 ####################################################
 
